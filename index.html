@@ -5,29 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BossX Panel</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <meta name="color-scheme" content="dark">
   <style>
-    /* Tema Malam */
-    body[data-theme="dark"] {
+    /* Mode Siang */
+    body[data-theme="light"] {
       --bg: linear-gradient(135deg, #6a11cb, #ff0080);
-      --panel: rgba(20, 20, 30, 0.85);
-      --panel-2: rgba(30, 30, 45, 0.85);
+      --panel: transparent;
+      --panel-2: transparent;
       --text: #ffffff;
-      --muted: #d1c4e9;
+      --muted: #f5d0fe;
+      --accent: #ffd700;
+      --hover: rgba(255, 255, 255, 0.1);
+      --border: rgba(255, 255, 255, 0.2);
+    }
+    /* Mode Malam */
+    body[data-theme="dark"] {
+      --bg: #000000;
+      --panel: transparent;
+      --panel-2: transparent;
+      --text: #ffd700;
+      --muted: #b8860b;
       --accent: #ffd700;
       --hover: rgba(255, 215, 0, 0.15);
       --border: rgba(255, 215, 0, 0.3);
-    }
-    /* Tema Siang */
-    body[data-theme="light"] {
-      --bg: linear-gradient(135deg, #d8b4fe, #fbc2eb);
-      --panel: rgba(255, 255, 255, 0.85);
-      --panel-2: rgba(245, 245, 245, 0.85);
-      --text: #1a1a1a;
-      --muted: #555;
-      --accent: #d4af37;
-      --hover: rgba(212, 175, 55, 0.15);
-      --border: rgba(212, 175, 55, 0.3);
     }
     * { box-sizing: border-box; }
     body {
@@ -43,7 +42,7 @@
       background: var(--panel);
       border-right: 1px solid var(--border);
       display: flex; flex-direction: column;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(8px);
     }
     .brand {
       padding: 18px 16px; background: var(--panel-2);
@@ -72,7 +71,7 @@
       border-bottom: 1px solid var(--border);
       padding: 10px 20px;
       display: flex; align-items: center; gap: 12px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(8px);
     }
     #realtimeClock { font-weight: bold; font-size: 16px; color: var(--accent); }
     .user-info { text-align: right; }
@@ -87,7 +86,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 10px; padding: 16px;
-      backdrop-filter: blur(12px);
+      backdrop-filter: blur(8px);
     }
     .input, .btn, .table { width: 100%; }
     .input {
@@ -135,7 +134,7 @@
     }
   </style>
 </head>
-<body data-theme="dark">
+<body data-theme="light">
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" class="logo">
@@ -151,13 +150,9 @@
   </aside>
   <div class="main">
     <div class="header">
-      <button class="btn secondary" id="toggleSidebar
-            <div class="header">
-      <button class="btn secondary" id="toggleSidebar" style="display:none">
-        <i class="fa fa-bars"></i>
-      </button>
+      <button class="btn secondary" id="toggleSidebar" style="display:none"><i class="fa fa-bars"></i></button>
       <div id="realtimeClock"></div>
-      <div style="flex:1"></div>
+      <div style="flex:1"></div
       <div class="user-info">
         <div class="name">Fery Muliawan</div>
         <div class="validator">Validator ID: 8055x</div>
@@ -366,7 +361,7 @@ themeToggle.addEventListener('click', () => {
 });
 (function initTheme() {
   const savedTheme = localStorage.getItem('theme');
-  document.body.setAttribute('data-theme', savedTheme ? savedTheme : 'dark');
+  document.body.setAttribute('data-theme', savedTheme ? savedTheme : 'light');
 })();
 
 // Render Halaman
