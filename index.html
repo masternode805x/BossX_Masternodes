@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BossX Panel</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <meta name="color-scheme" content="dark">
   <style>
     :root {
       --bg: #0b0f14;
@@ -15,6 +16,8 @@
       --accent: #1e88e5;
       --hover: #1c2633;
       --border: #1c2633;
+      --success: #00c853;
+      --danger: #ef5350;
     }
     * { box-sizing: border-box; }
     body {
@@ -36,15 +39,9 @@
     .brand .logo {
       width: 60px; height: 60px; object-fit: contain;
     }
-    .brand-text {
-      display: flex; flex-direction: column; line-height: 1.2;
-    }
-    .brand-text .name {
-      font-weight: 800; font-size: 20px; color: var(--accent);
-    }
-    .brand-text .tagline {
-      font-size: 14px; color: var(--muted);
-    }
+    .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
+    .brand-text .name { font-weight: 800; font-size: 20px; color: var(--accent); }
+    .brand-text .tagline { font-size: 14px; color: var(--muted); }
 
     .menu { list-style: none; padding: 8px 0; margin: 0; flex: 1; }
     .menu li {
@@ -71,30 +68,16 @@
       align-items: center;
       gap: 12px;
     }
-    .user-info {
-      text-align: right;
-    }
-    .user-info .name {
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .user-info .validator {
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .user-info { text-align: right; }
+    .user-info .name { font-weight: 600; font-size: 14px; }
+    .user-info .validator { font-size: 12px; color: var(--muted); }
     .avatar {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--accent);
+      width: 60px; height: 60px; border-radius: 50%;
+      object-fit: cover; border: 2px solid var(--accent);
     }
 
-    /* Konten */
-    .content {
-      padding: 20px;
-      flex: 1;
-    }
+    /* Content */
+    .content { padding: 20px; flex: 1; }
     .card {
       background: var(--panel); border: 1px solid var(--border);
       border-radius: 10px; padding: 16px;
@@ -102,27 +85,64 @@
     h1 { margin: 0 0 6px; }
     .sub { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
 
+    /* Forms & buttons */
+    .input, .select, .btn, .table {
+      width: 100%;
+    }
+    .input, .select {
+      padding: 10px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--panel-2); color: var(--text); margin-bottom: 10px;
+    }
+    .btn {
+      padding: 10px 16px; border-radius: 6px; border: none; cursor: pointer;
+      background: var(--accent); color: #fff; font-weight: 600;
+    }
+    .btn.secondary { background: #2b3646; color: var(--text); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* Table */
+    .table { border-collapse: collapse; }
+    .table th, .table td {
+      padding: 10px; border: 1px solid var(--border); text-align: left;
+    }
+    .table thead tr { background: var(--panel-2); }
+
     /* Log area */
     .log-container {
-      background: #000;
-      color: #00ff88;
-      font-family: monospace;
-      font-size: 13px;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      height: 300px;
-      overflow-y: auto;
+      background: #000; color: #00ff88; font-family: monospace; font-size: 13px;
+      padding: 10px; border-radius: 6px; border: 1px solid var(--border);
+      height: 300px; overflow-y: auto;
     }
-    .log-output {
-      margin: 0;
-      white-space: pre-wrap;
+    .log-output { margin: 0; white-space: pre-wrap; }
+
+    /* Toast */
+    .toast {
+      position: fixed; right: 20px; bottom: 20px; padding: 12px 14px;
+      background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+      border-left: 4px solid var(--accent); border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.35);
+      opacity: 0; transform: translateY(10px); transition: opacity .2s, transform .2s;
+      max-width: 320px; z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { border-left-color: var(--success); }
+    .toast.error { border-left-color: var(--danger); }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar { width: 210px; }
+      .main { margin-left: 210px; }
+    }
+    @media (max-width: 720px) {
+      .sidebar { position: fixed; transform: translateX(-100%); transition: transform .2s; z-index: 100; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .header { justify-content: space-between; }
     }
   </style>
 </head>
 <body>
   <!-- Sidebar -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand">
       <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" alt="Logo BossX" class="logo">
       <div class="brand-text">
@@ -130,19 +150,21 @@
         <span class="tagline">Software Masternode</span>
       </div>
     </div>
-    <ul class="menu">
-      <li class="active"><span class="icon"><i class="fa fa-server"></i></span>Masternode</li>
-      <li><span class="icon"><i class="fa fa-wallet"></i></span>Deposit</li>
-      <li><span class="icon"><i class="fa fa-money-bill-transfer"></i></span>Withdrawal</li>
-      <li><span class="icon"><i class="fa fa-exchange-alt"></i></span>Peer to Peer</li>
-      <li><span class="icon"><i class="fa fa-cog"></i></span>Settings</li>
+    <ul class="menu" id="menu">
+      <li class="active" data-page="masternode"><span class="icon"><i class="fa fa-server"></i></span>Masternode</li>
+      <li data-page="deposit"><span class="icon"><i class="fa fa-wallet"></i></span>Deposit</li>
+      <li data-page="withdrawal"><span class="icon"><i class="fa fa-money-bill-transfer"></i></span>Withdrawal</li>
+      <li data-page="p2p"><span class="icon"><i class="fa fa-exchange-alt"></i></span>Peer to Peer</li>
+      <li data-page="settings"><span class="icon"><i class="fa fa-cog"></i></span>Settings</li>
     </ul>
   </aside>
 
   <!-- Main content -->
   <div class="main">
-    <!-- Header dengan user profile -->
+    <!-- Header -->
     <div class="header">
+      <button class="btn secondary" id="toggleSidebar" style="display:none"><i class="fa fa-bars"></i></button>
+      <div style="flex:1"></div>
       <div class="user-info">
         <div class="name">Fery Muliawan</div>
         <div class="validator">Validator ID: 8055x</div>
@@ -150,58 +172,203 @@
       <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" alt="Foto Profil" class="avatar">
     </div>
 
-    <!-- Konten halaman -->
-    <div class="content">
-      <div class="card">
-        <h1>Masternode</h1>
-        <p class="sub">Log output hybrid mining + masternode (simulasi).</p>
-        
-        <!-- Area Log Dummy -->
-        <div class="log-container" id="logContainer">
+    <!-- Konten dinamis -->
+    <div class="content" id="content">
+      <!-- Default render diinisiasi lewat JS -->
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // Elements
+    const menu = document.getElementById('menu');
+    const content = document.getElementById('content');
+    const toast = document.getElementById('toast');
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebar = document.getElementById('toggleSidebar');
+
+    // Pages (kerangka)
+    const pages = {
+      masternode: `
+        <div class="card">
+          <h1>Masternode</h1>
+          <p class="sub">Log output hybrid mining + masternode (simulasi).</p>
+          <div class="log-container" id="logContainer">
 <pre class="log-output" id="logOutput">
 [2025-09-12 10:00:01] Starting BossX Masternode service...
 [2025-09-12 10:00:02] Connecting to network peers...
 [2025-09-12 10:00:05] Peer connected: 192.168.1.24:8055
 [2025-09-12 10:00:07] Masternode status: ENABLED
-[2025-09-12 10:00:10] Block #154233 validated. Reward: 2.5 BOSSX
-[2025-09-12 10:00:15] Block #154234 validated. Reward: 2.5 BOSSX
-[2025-09-12 10:00:20] Uptime: 00:05:19 | Peers: 8 | Ping: 32ms
-[2025-09-12 10:00:25] Block #154235 validated. Reward: 2.5 BOSSX
 </pre>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  <!-- Script Auto-Scroll -->
-  <script>
-    const logContainer = document.getElementById('logContainer');
-    const logOutput = document.getElementById('logOutput');
+      `,
+      deposit: `
+        <div class="card">
+          <h1>Deposit</h1>
+          <p class="sub">Form deposit saldo ke akun BossX Anda.</p>
+          <input class="input" type="number" placeholder="Jumlah (contoh: 100)">
+          <select class="select">
+            <option value="">Metode Pembayaran</option>
+            <option>Bank Transfer</option>
+            <option>Crypto Wallet</option>
+          </select>
+          <button class="btn" id="btnDeposit">Kirim Deposit</button>
+        </div>
+      `,
+      withdrawal: `
+        <div class="card">
+          <h1>Withdrawal</h1>
+          <p class="sub">Form penarikan saldo dari akun BossX Anda.</p>
+          <input class="input" type="number" placeholder="Jumlah (contoh: 50)">
+          <input class="input" type="text" placeholder="Alamat Wallet (contoh: BOSSX1abc...)">
+          <button class="btn" id="btnWithdraw">Tarik Saldo</button>
+        </div>
+      `,
+      p2p: `
+        <div class="card">
+          <h1>Peer to Peer</h1>
+          <p class="sub">Daftar order jual/beli BossX Coin.</p>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tipe</th><th>Harga</th><th>Jumlah</th><th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Beli</td><td>1.25 USDT</td><td>500 BOSSX</td>
+                <td><button class="btn secondary" data-action="jual">Jual</button></td>
+              </tr>
+              <tr>
+                <td>Jual</td><td>1.30 USDT</td><td>300 BOSSX</td>
+                <td><button class="btn secondary" data-action="beli">Beli</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `,
+      settings: `
+        <div class="card">
+          <h1>Settings</h1>
+          <p class="sub">Pengaturan akun dan preferensi.</p>
+          <label>Nama Pengguna</label>
+          <input class="input" type="text" value="Fery Muliawan">
+          <label>Email</label>
+          <input class="input" type="email" placeholder="email@domain.com">
+          <label>Password Baru</label>
+          <input class="input" type="password" placeholder="********">
+          <button class="btn" id="btnSaveSettings">Simpan Perubahan</button>
+        </div>
+      `
+    };
 
-    // Fungsi untuk menambah log baru
-    function addLog(line) {
-      logOutput.textContent += '\n' + line;
-      logContainer.scrollTop = logContainer.scrollHeight; // auto-scroll ke bawah
+    // State
+    let currentPage = 'masternode';
+    let logInterval = null;
+
+    // Helpers
+    function showToast(message, type = 'success') {
+      toast.textContent = message;
+      toast.className = 'toast show ' + (type === 'error' ? 'error' : 'success');
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => { toast.classList.remove('show'); }, 2500);
     }
 
-    // Simulasi penambahan log setiap 3 detik
-    const dummyLogs = [
-      "[2025-09-12 10:00:30] Peer connected: 192.168.1.25:8055",
-      "[2025-09-12 10:00:35] Block #154236 validated. Reward: 2.5 BOSSX",
-      "[2025-09-12 10:00:40] Uptime: 00:05:39 | Peers: 9 | Ping: 31ms",
-      "[2025-09-12 10:00:45] Block #154237 validated. Reward: 2.5 BOSSX",
-      "[2025-09-12 10:00:50] Peer disconnected: 192.168.1.24:8055",
-      "[2025-09-12 10:00:55] Peer connected: 192.168.1.26:8055",
-      "[2025-09-12 10:01:00] Block #154238 validated. Reward: 2.5 BOSSX",
-      "[2025-09-12 10:01:05] Uptime: 00:06:04 | Peers: 9 | Ping: 30ms"
-    ];
-
-    let index = 0;
-    setInterval(() => {
-      if (index < dummyLogs.length) {
-        addLog(dummyLogs[index]);
-        index++;
+    function clearLogInterval() {
+      if (logInterval) {
+        clearInterval(logInterval);
+        logInterval = null;
       }
-    }, 3000);
+    }
+
+    function initMasternodeLog() {
+      const logContainer = document.getElementById('logContainer');
+      const logOutput = document.getElementById('logOutput');
+      if (!logContainer || !logOutput) return;
+
+      // Auto-scroll ke bawah saat load
+      logContainer.scrollTop = logContainer.scrollHeight;
+
+      const dummyLogs = [
+        "[2025-09-12 10:00:10] Block #154233 validated. Reward: 2.5 BOSSX",
+        "[2025-09-12 10:00:15] Block #154234 validated. Reward: 2.5 BOSSX",
+        "[2025-09-12 10:00:20] Uptime: 00:05:19 | Peers: 8 | Ping: 32ms",
+        "[2025-09-12 10:00:25] Block #154235 validated. Reward: 2.5 BOSSX",
+        "[2025-09-12 10:00:30] Peer connected: 192.168.1.25:8055",
+        "[2025-09-12 10:00:35] Block #154236 validated. Reward: 2.5 BOSSX",
+        "[2025-09-12 10:00:40] Uptime: 00:05:39 | Peers: 9 | Ping: 31ms",
+        "[2025-09-12 10:00:45] Block #154237 validated. Reward: 2.5 BOSSX"
+      ];
+      let i = 0;
+
+      function addLog(line) {
+        logOutput.textContent += '\n' + line;
+        logContainer.scrollTop = logContainer.scrollHeight;
+      }
+
+      clearLogInterval();
+      logInterval = setInterval(() => {
+        if (i < dummyLogs.length) {
+          addLog(dummyLogs[i++]);
+        } else {
+          clearLogInterval();
+        }
+      }, 2000);
+    }
+
+    function render(page) {
+      clearLogInterval();
+      content.innerHTML = pages[page] || '<div class="card"><h1>Halaman kosong</h1></div>';
+      currentPage = page;
+
+      if (page === 'masternode') initMasternodeLog();
+      if (page === 'deposit') {
+        const btn = document.getElementById('btnDeposit');
+        if (btn) btn.addEventListener('click', () => showToast('Permintaan deposit dikirim (simulasi).', 'success'));
+      }
+      if (page === 'withdrawal') {
+        const btn = document.getElementById('btnWithdraw');
+        if (btn) btn.addEventListener('click', () => showToast('Permintaan penarikan diproses (simulasi).', 'success'));
+      }
+      if (page === 'p2p') {
+        content.querySelectorAll('[data-action]').forEach(b => {
+          b.addEventListener('click', () => showToast(`Aksi ${b.dataset.action} diklik (simulasi).`, 'success'));
+        });
+      }
+      if (page === 'settings') {
+        const btn = document.getElementById('btnSaveSettings');
+        if (btn) btn.addEventListener('click', () => showToast('Pengaturan disimpan (simulasi).', 'success'));
+      }
+    }
+
+    // Menu nav
+    menu.querySelectorAll('li').forEach(li => {
+      li.addEventListener('click', () => {
+        menu.querySelectorAll('li').forEach(i => i.classList.remove('active'));
+        li.classList.add('active');
+        render(li.dataset.page);
+        if (window.innerWidth <= 720) sidebar.classList.remove('open');
+      });
+    });
+
+    // Responsive sidebar toggle
+    function handleResize() {
+      if (window.innerWidth <= 720) {
+        toggleSidebar.style.display = 'inline-flex';
+        toggleSidebar.onclick = () => sidebar.classList.toggle('open');
+      } else {
+        toggleSidebar.style.display = 'none';
+        sidebar.classList.remove('open');
+      }
+    }
+    window.addEventListener('resize', handleResize);
+
+    // Init
+    handleResize();
+    render('masternode');
   </script>
 </body>
 </html>
