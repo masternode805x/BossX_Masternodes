@@ -125,6 +125,18 @@
       max-width: 320px; z-index: 1000;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Responsif untuk Log & History berdampingan */
+    .log-history-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .log-history-container {
+        grid-template-columns: 1fr;
+      }
+    }
     @media (max-width: 720px) {
       .sidebar { position: fixed; transform: translateX(-100%); transition: transform .2s; z-index: 100; }
       .sidebar.open { transform: translateX(0); }
@@ -161,20 +173,21 @@
     <div id="realtimeClock"></div>
     <div style="flex:1"></div>
     <div class="user-info">
-      <div class="name">Fery Muliawan</div>
+      <div class="name">Master</div>
       <div class="validator">Validator ID: 8055x</div>
     </div>
     <img src="https://i.ibb.co/3y8VZfP/profile.jpg" class="avatar">
   </div>
   <div class="content" id="content">
-    <!-- Halaman Masternode -->
+    <!-- Form Aktivasi -->
     <div class="card" style="margin-bottom:20px;">
       <h2 style="color:var(--accent)">Masternode</h2>
       <input type="number" id="masternodeAmount" class="input" placeholder="Masukkan jumlah BossX">
       <button id="activateMasternode" class="btn" disabled>Aktivasi Masternode</button>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;">
+    <!-- 5 Card -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:20px;">
       <div class="card">
         <h3>Node Amount</h3>
         <p id="nodeAmountDisplay">0 BossX</p>
@@ -199,31 +212,40 @@
         <p>Update: <span id="usdtLastUpdate">-</span></p>
         <button id="refreshUsdtBtn" class="btn secondary">Refresh</button>
       </div>
-    </div>
-
-    <div class="card" style="margin-top:20px;">
-      <h3>Log Aktivasi</h3>
-      <div id="logContainer" class="log-container">
-        <pre id="logOutput">[Log dimulai]</pre>
+      <div class="card">
+        <h3>Status Kontrak</h3>
+        <p id="contractStatus">Belum aktif</p>
+        <p>Sisa waktu: <span id="contractCountdown">-</span></p>
       </div>
     </div>
 
-    <!-- Tabel Riwayat Aktivasi -->
-    <div class="card" style="margin-top:20px;">
-      <h2 style="color:var(--accent)">Riwayat Aktivasi</h2>
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Hari</th>
-            <th>Tanggal</th>
-            <th>Waktu</th>
-            <th>Jumlah</th>
-            <th>Jenis</th>
-            <th>Masa Kontrak</th>
-          </tr>
-        </thead>
-        <tbody id="activationHistory"></tbody>
-      </table>
+    <!-- Log & History berdampingan -->
+    <div class="log-history-container">
+      <!-- Log Aktivasi -->
+      <div class="card">
+        <h3>Log Aktivasi</h3>
+        <div id="logContainer" class="log-container">
+          <pre id="logOutput">[Log dimulai]</pre>
+        </div>
+      </div>
+
+      <!-- History Aktivasi -->
+      <div class="card">
+        <h2 style="color:var(--accent)">Riwayat Aktivasi</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Hari</th>
+              <th>Tanggal</th>
+              <th>Waktu</th>
+              <th>Jumlah</th>
+              <th>Jenis</th>
+              <th>Masa Kontrak</th>
+            </tr>
+          </thead>
+          <tbody id="activationHistory"></tbody>
+        </table>
+      </div>
     </div>
 <script>
 const menuItems = document.querySelectorAll('#menu li');
@@ -255,12 +277,13 @@ function showToast(message, type = 'info') {
 // Render halaman
 function render(page) {
   if (page === 'masternode') {
-    // Event Aktivasi Masternode
     const amountInput = document.getElementById('masternodeAmount');
     const btnActivate = document.getElementById('activateMasternode');
     const nodeAmountDisplay = document.getElementById('nodeAmountDisplay');
     const logOutput = document.getElementById('logOutput');
     const historyTable = document.getElementById('activationHistory');
+    const contractStatus = document.getElementById('contractStatus');
+    const contractCountdown = document.getElementById('contractCountdown');
     let activated = false;
 
     amountInput.addEventListener('input', () => {
@@ -282,6 +305,11 @@ function render(page) {
         amountInput.disabled = true;
         btnActivate.disabled = true;
 
+        // Status Kontrak aktif
+        contractStatus.textContent = "Aktif";
+        const endTime = new Date(Date.now() + 31536000000); // 31.536.000 detik
+        contractCountdown.dataset.endtime = endTime.toISOString();
+
         // Tambah ke tabel riwayat
         const now = new Date();
         const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
@@ -290,7 +318,6 @@ function render(page) {
         const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
         const amount = `${val} BossX`;
         const type = 'Masternode';
-        const endTime = new Date(now.getTime() + 31536000000); // 31.536.000 detik
 
         const row = document.createElement('tr');
         row.innerHTML = `<td>${dayName}</td>
@@ -306,9 +333,10 @@ function render(page) {
     });
   }
 }
-// Countdown untuk semua kontrak
+// Countdown untuk semua kontrak & card Status Kontrak
 function startContractCountdown() {
   setInterval(() => {
+    // Countdown di tabel
     document.querySelectorAll('.contract-timer').forEach(cell => {
       const endTime = new Date(cell.dataset.endtime);
       const now = new Date();
@@ -326,6 +354,26 @@ function startContractCountdown() {
 
       cell.textContent = `${days} hari ${hours}:${minutes}:${seconds}`;
     });
+
+    // Countdown di card Status Kontrak
+    const contractCountdown = document.getElementById('contractCountdown');
+    if (contractCountdown && contractCountdown.dataset.endtime) {
+      const endTime = new Date(contractCountdown.dataset.endtime);
+      const now = new Date();
+      let diff = endTime - now;
+
+      if (diff <= 0) {
+        contractCountdown.textContent = "Expired";
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+
+      contractCountdown.textContent = `${days} hari ${hours}:${minutes}:${seconds}`;
+    }
   }, 1000);
 }
 startContractCountdown();
@@ -397,8 +445,7 @@ menuItems.forEach(item => {
     item.classList.add('active');
     const page = item.dataset.page;
     if (page === 'masternode') {
-      content.innerHTML = document.querySelector('#content').innerHTML; // reload masternode
-      render('masternode');
+      location.reload(); // reload untuk reset event listener
     } else {
       content.innerHTML = `<div class="card"><h2 style="color:var(--accent)">${page.charAt(0).toUpperCase() + page.slice(1)}</h2><p>Halaman ${page} dalam pengembangan...</p></div>`;
     }
