@@ -70,6 +70,7 @@
     <div class="header">
       <button class="btn secondary" id="toggleSidebar" style="display:none"><i class="fa fa-bars"></i></button>
       <div style="flex:1"></div>
+      <div id="realtimeClock" style="font-weight:bold; font-size:14px; color:var(--accent); margin-right:20px;"></div>
       <div class="user-info"><div class="name">Fery Muliawan</div><div class="validator">Validator ID: 8055x</div></div>
       <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" class="avatar">
     </div>
@@ -238,6 +239,28 @@ function handleResize() {
   }
 }
 window.addEventListener('resize', handleResize);
+
+// Jam Real-Time
+function updateClock() {
+  const clockEl = document.getElementById('realtimeClock');
+  if (!clockEl) return;
+
+  const now = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  const dayName = days[now.getDay()];
+  const date = String(now.getDate()).padStart(2, '0');
+  const monthName = months[now.getMonth()];
+  const year = now.getFullYear();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+
+  clockEl.textContent = `${dayName}, ${date} ${monthName} ${year} ${hours}:${minutes}:${seconds}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
 
 // Render Halaman
 function render(page) {
