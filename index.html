@@ -83,7 +83,7 @@
       color: var(--muted);
     }
     .avatar {
-      width: 60px; /* diperbesar setara logo BossX */
+      width: 60px;
       height: 60px;
       border-radius: 50%;
       object-fit: cover;
@@ -101,6 +101,23 @@
     }
     h1 { margin: 0 0 6px; }
     .sub { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
+
+    /* Log area */
+    .log-container {
+      background: #000;
+      color: #00ff88;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      height: 300px;
+      overflow-y: auto;
+    }
+    .log-output {
+      margin: 0;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -137,9 +154,54 @@
     <div class="content">
       <div class="card">
         <h1>Masternode</h1>
-        <p class="sub">Halaman ini akan menampilkan log output hybrid mining + masternode secara real-time.</p>
+        <p class="sub">Log output hybrid mining + masternode (simulasi).</p>
+        
+        <!-- Area Log Dummy -->
+        <div class="log-container" id="logContainer">
+<pre class="log-output" id="logOutput">
+[2025-09-12 10:00:01] Starting BossX Masternode service...
+[2025-09-12 10:00:02] Connecting to network peers...
+[2025-09-12 10:00:05] Peer connected: 192.168.1.24:8055
+[2025-09-12 10:00:07] Masternode status: ENABLED
+[2025-09-12 10:00:10] Block #154233 validated. Reward: 2.5 BOSSX
+[2025-09-12 10:00:15] Block #154234 validated. Reward: 2.5 BOSSX
+[2025-09-12 10:00:20] Uptime: 00:05:19 | Peers: 8 | Ping: 32ms
+[2025-09-12 10:00:25] Block #154235 validated. Reward: 2.5 BOSSX
+</pre>
+        </div>
       </div>
     </div>
   </div>
+  <!-- Script Auto-Scroll -->
+  <script>
+    const logContainer = document.getElementById('logContainer');
+    const logOutput = document.getElementById('logOutput');
+
+    // Fungsi untuk menambah log baru
+    function addLog(line) {
+      logOutput.textContent += '\n' + line;
+      logContainer.scrollTop = logContainer.scrollHeight; // auto-scroll ke bawah
+    }
+
+    // Simulasi penambahan log setiap 3 detik
+    const dummyLogs = [
+      "[2025-09-12 10:00:30] Peer connected: 192.168.1.25:8055",
+      "[2025-09-12 10:00:35] Block #154236 validated. Reward: 2.5 BOSSX",
+      "[2025-09-12 10:00:40] Uptime: 00:05:39 | Peers: 9 | Ping: 31ms",
+      "[2025-09-12 10:00:45] Block #154237 validated. Reward: 2.5 BOSSX",
+      "[2025-09-12 10:00:50] Peer disconnected: 192.168.1.24:8055",
+      "[2025-09-12 10:00:55] Peer connected: 192.168.1.26:8055",
+      "[2025-09-12 10:01:00] Block #154238 validated. Reward: 2.5 BOSSX",
+      "[2025-09-12 10:01:05] Uptime: 00:06:04 | Peers: 9 | Ping: 30ms"
+    ];
+
+    let index = 0;
+    setInterval(() => {
+      if (index < dummyLogs.length) {
+        addLog(dummyLogs[index]);
+        index++;
+      }
+    }, 3000);
+  </script>
 </body>
 </html>
