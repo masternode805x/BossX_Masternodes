@@ -122,11 +122,13 @@
       max-width: 320px; z-index: 1000;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.success { border-left-color: var(--success); }
-    .toast.error { border-left-color: var(--danger); }
     .deposit-grid { display: flex; gap: 20px; flex-wrap: wrap; }
     .deposit-col { flex: 1; min-width: 300px; }
     .wallet-box { display: flex; align-items: center; gap: 10px; }
+    /* Efek transisi halus */
+    body, .sidebar, .header, .card, .menu li, .btn, .input, .table th, .table td {
+      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+    }
     @media (max-width: 720px) {
       .sidebar { position: fixed; transform: translateX(-100%); transition: transform .2s; z-index: 100; }
       .sidebar.open { transform: translateX(0); }
@@ -138,7 +140,10 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" class="logo">
-      <div class="brand-text"><span class="name">BossX</span><span class="tagline">Software Masternode</span></div>
+      <div class="brand-text">
+        <span class="name">BossX</span>
+        <span class="tagline">Software Masternode</span>
+      </div>
     </div>
     <ul class="menu" id="menu">
       <li class="active" data-page="masternode"><i class="fa fa-server"></i> Masternode</li>
@@ -148,23 +153,41 @@
       <li data-page="settings"><i class="fa fa-cog"></i> Settings</li>
     </ul>
   </aside>
+
   <div class="main">
     <div class="header">
-      <button class="btn secondary" id="toggleSidebar" style="display:none"><i class="fa fa-bars"></i></button>
+      <!-- Tombol sidebar untuk mobile -->
+      <button class="btn secondary" id="toggleSidebar" style="display:none">
+        <i class="fa fa-bars"></i>
+      </button>
+
+      <!-- Jam real-time di kiri -->
       <div id="realtimeClock"></div>
-      <div style="flex:1"></div
+
+      <!-- Spacer -->
+      <div style="flex:1"></div>
+
+      <!-- Info user -->
       <div class="user-info">
         <div class="name">Fery Muliawan</div>
         <div class="validator">Validator ID: 8055x</div>
       </div>
+
+      <!-- Foto profil -->
       <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" class="avatar">
-      <!-- Tombol Toggle Tema -->
-      <button id="themeToggle" class="btn secondary" style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:8px;">
+
+      <!-- Tombol toggle tema -->
+      <button id="themeToggle" class="btn secondary" 
+        style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:8px;">
         <i class="fa fa-adjust"></i>
       </button>
     </div>
+
+    <!-- Konten utama -->
     <div class="content" id="content"></div>
   </div>
+
+  <!-- Toast notification -->
   <div id="toast" class="toast"></div>
 <script>
 const menuItems = document.querySelectorAll('#menu li');
@@ -363,7 +386,6 @@ themeToggle.addEventListener('click', () => {
   const savedTheme = localStorage.getItem('theme');
   document.body.setAttribute('data-theme', savedTheme ? savedTheme : 'light');
 })();
-
 // Render Halaman
 function render(page) {
   content.innerHTML = pages[page] || '<div class="card"><h1>Halaman kosong</h1></div>';
