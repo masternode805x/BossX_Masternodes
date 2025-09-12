@@ -6,7 +6,7 @@
   <title>BossX Panel</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* Mode Siang */
+    /* Tema Siang */
     body[data-theme="light"] {
       --bg: linear-gradient(135deg, #6a11cb, #ff0080);
       --panel: transparent;
@@ -17,7 +17,7 @@
       --hover: rgba(255, 255, 255, 0.1);
       --border: rgba(255, 255, 255, 0.2);
     }
-    /* Mode Malam */
+    /* Tema Malam */
     body[data-theme="dark"] {
       --bg: #000000;
       --panel: transparent;
@@ -87,6 +87,11 @@
       border: 1px solid var(--border);
       border-radius: 10px; padding: 16px;
       backdrop-filter: blur(8px);
+      transition: all 0.4s ease;
+    }
+    .card:hover {
+      box-shadow: 0 0 20px var(--accent), 0 0 40px #fff8dc;
+      transform: translateY(-6px);
     }
     .input, .btn, .table { width: 100%; }
     .input {
@@ -122,13 +127,6 @@
       max-width: 320px; z-index: 1000;
     }
     .toast.show { opacity: 1; transform: translateY(0); }
-    .deposit-grid { display: flex; gap: 20px; flex-wrap: wrap; }
-    .deposit-col { flex: 1; min-width: 300px; }
-    .wallet-box { display: flex; align-items: center; gap: 10px; }
-    /* Efek transisi halus */
-    body, .sidebar, .header, .card, .menu li, .btn, .input, .table th, .table td {
-      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-    }
     @media (max-width: 720px) {
       .sidebar { position: fixed; transform: translateX(-100%); transition: transform .2s; z-index: 100; }
       .sidebar.open { transform: translateX(0); }
@@ -137,58 +135,50 @@
   </style>
 </head>
 <body data-theme="light">
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" class="logo">
-      <div class="brand-text">
-        <span class="name">BossX</span>
-        <span class="tagline">Software Masternode</span>
-      </div>
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" class="logo">
+    <div class="brand-text">
+      <span class="name">BossX</span>
+      <span class="tagline">Software Masternode</span>
     </div>
-    <ul class="menu" id="menu">
-      <li class="active" data-page="masternode"><i class="fa fa-server"></i> Masternode</li>
-      <li data-page="deposit"><i class="fa fa-wallet"></i> Deposit</li>
-      <li data-page="withdrawal"><i class="fa fa-money-bill-transfer"></i> Withdrawal</li>
-      <li data-page="p2p"><i class="fa fa-exchange-alt"></i> Peer to Peer</li>
-      <li data-page="settings"><i class="fa fa-cog"></i> Settings</li>
-    </ul>
-  </aside>
+  </div>
+  <ul class="menu" id="menu">
+    <li class="active" data-page="masternode"><i class="fa fa-server"></i> Masternode</li>
+    <li data-page="deposit"><i class="fa fa-wallet"></i> Deposit</li>
+    <li data-page="withdrawal"><i class="fa fa-money-bill-transfer"></i> Withdrawal</li>
+    <li data-page="p2p"><i class="fa fa-exchange-alt"></i> Peer to Peer</li>
+    <li data-page="settings"><i class="fa fa-cog"></i> Settings</li>
+  </ul>
+</aside>
 
-  <div class="main">
-    <div class="header">
-      <!-- Tombol sidebar untuk mobile -->
-      <button class="btn secondary" id="toggleSidebar" style="display:none">
-        <i class="fa fa-bars"></i>
-      </button>
-
-      <!-- Jam real-time di kiri -->
-      <div id="realtimeClock"></div>
-
-      <!-- Spacer -->
-      <div style="flex:1"></div>
-
-      <!-- Info user -->
-      <div class="user-info">
-        <div class="name">Fery Muliawan</div>
-        <div class="validator">Validator ID: 8055x</div>
-      </div>
-
-      <!-- Foto profil -->
-      <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" class="avatar">
-
-      <!-- Tombol toggle tema -->
-      <button id="themeToggle" class="btn secondary" 
-        style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:8px;">
-        <i class="fa fa-adjust"></i>
-      </button>
+<!-- Main -->
+<div class="main">
+  <div class="header">
+    <button class="btn secondary" id="toggleSidebar" style="display:none">
+      <i class="fa fa-bars"></i>
+    </button>
+    <div id="realtimeClock"></div>
+    <div style="flex:1"></div>
+    <div class="user-info">
+      <div class="name">Fery Muliawan</div>
+      <div class="validator">Validator ID: 8055x</div>
     </div>
-
-    <!-- Konten utama -->
-    <div class="content" id="content"></div>
+    <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" class="avatar">
+    <button id="themeToggle" class="btn secondary" 
+      style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:8px;">
+      <i class="fa fa-adjust"></i>
+    </button>
   </div>
 
-  <!-- Toast notification -->
-  <div id="toast" class="toast"></div>
+  <!-- Konten -->
+  <div class="content" id="content"></div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
 <script>
 const menuItems = document.querySelectorAll('#menu li');
 const content = document.getElementById('content');
@@ -223,6 +213,16 @@ const pages = {
           Convert to USDT
         </button>
       </div>
+
+      <!-- Card Balance USDT -->
+      <div class="card" style="flex:1; min-width:280px; text-align:center;">
+        <h2 style="color:var(--accent)">Balance USDT</h2>
+        <p id="usdtBalance" style="font-size:18px;font-weight:bold;margin:5px 0;">$0.00</p>
+        <p>Total Deposit: <span id="usdtDeposit">$0.00</span></p>
+        <p>Total Reward: <span id="usdtReward">$0.00</span></p>
+        <p>Last Update: <span id="usdtLastUpdate">-</span></p>
+        <button id="refreshUsdtBtn" class="btn secondary" style="margin-top:10px;">Refresh</button>
+      </div>
     </div>
 
     <!-- Log Masternode -->
@@ -235,7 +235,6 @@ const pages = {
       </div>
     </div>
   `,
-
   deposit: `
     <div class="deposit-grid">
       <!-- Deposit USDT -->
@@ -246,16 +245,6 @@ const pages = {
           <input class="input" type="text" id="usdtAddress" value="TRC20-ADDRESS-USDT" readonly>
           <button class="btn secondary" onclick="copyAddress('usdtAddress')"><i class="fa fa-copy"></i></button>
         </div>
-        <h3 style="margin-top:15px; color:var(--accent)">Riwayat Deposit USDT</h3>
-        <table class="table">
-          <thead>
-            <tr><th>Waktu</th><th>Jumlah</th><th>Status</th></tr>
-          </thead>
-          <tbody id="usdtHistory">
-            <tr><td>Jum, 12-09-2025 10:35:20</td><td>100 USDT</td><td style="color:var(--success)">Sukses</td></tr>
-            <tr><td>Kam, 11-09-2025 14:12:05</td><td>50 USDT</td><td style="color:orange">Pending</td></tr>
-          </tbody>
-        </table>
       </div>
 
       <!-- Deposit BOSSX -->
@@ -266,16 +255,6 @@ const pages = {
           <input class="input" type="text" id="bossxAddress" value="BOSSX-ADDRESS" readonly>
           <button class="btn secondary" onclick="copyAddress('bossxAddress')"><i class="fa fa-copy"></i></button>
         </div>
-        <h3 style="margin-top:15px; color:var(--accent)">Riwayat Deposit BOSSX</h3>
-        <table class="table">
-          <thead>
-            <tr><th>Waktu</th><th>Jumlah</th><th>Status</th></tr>
-          </thead>
-          <tbody id="bossxHistory">
-            <tr><td>Jum, 12-09-2025 09:20:10</td><td>250 BOSSX</td><td style="color:var(--success)">Sukses</td></tr>
-            <tr><td>Rab, 10-09-2025 16:45:55</td><td>100 BOSSX</td><td style="color:orange">Pending</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   `,
@@ -283,9 +262,8 @@ const pages = {
   withdrawal: `
     <div class="card">
       <h1 style="color:var(--accent)">Withdrawal</h1>
-      <p class="sub">Form penarikan saldo dari akun BossX Anda.</p>
       <input class="input" type="number" placeholder="Jumlah (contoh: 50)">
-      <input class="input" type="text" placeholder="Alamat Wallet (contoh: BOSSX1abc...)">
+      <input class="input" type="text" placeholder="Alamat Wallet">
       <button class="btn" onclick="showToast('Permintaan penarikan diproses (simulasi).','success')">Tarik Saldo</button>
     </div>
   `,
@@ -293,14 +271,13 @@ const pages = {
   p2p: `
     <div class="card">
       <h1 style="color:var(--accent)">Peer to Peer</h1>
-      <p class="sub">Daftar order jual/beli BossX Coin.</p>
       <table class="table">
         <thead>
           <tr><th>Tipe</th><th>Harga</th><th>Jumlah</th><th>Aksi</th></tr>
         </thead>
         <tbody>
-          <tr><td>Beli</td><td>1.25 USDT</td><td>500 BOSSX</td><td><button class="btn secondary" onclick="showToast('Aksi Jual dipilih (simulasi).','success')">Jual</button></td></tr>
-          <tr><td>Jual</td><td>1.30 USDT</td><td>300 BOSSX</td><td><button class="btn secondary" onclick="showToast('Aksi Beli dipilih (simulasi).','success')">Beli</button></td></tr>
+          <tr><td>Beli</td><td>1.25 USDT</td><td>500 BOSSX</td><td><button class="btn secondary">Jual</button></td></tr>
+          <tr><td>Jual</td><td>1.30 USDT</td><td>300 BOSSX</td><td><button class="btn secondary">Beli</button></td></tr>
         </tbody>
       </table>
     </div>
@@ -309,7 +286,6 @@ const pages = {
   settings: `
     <div class="card">
       <h1 style="color:var(--accent)">Settings</h1>
-      <p class="sub">Pengaturan akun dan preferensi.</p>
       <label>Nama Pengguna</label>
       <input class="input" type="text" value="Fery Muliawan">
       <label>Email</label>
@@ -320,11 +296,11 @@ const pages = {
     </div>
   `
 };
+
 // Copy Address
 function copyAddress(id) {
   const input = document.getElementById(id);
   input.select();
-  input.setSelectionRange(0, 99999);
   document.execCommand("copy");
   showToast("Alamat berhasil disalin!", "success");
 }
@@ -333,7 +309,7 @@ function copyAddress(id) {
 const toast = document.getElementById('toast');
 function showToast(message, type = 'success') {
   toast.textContent = message;
-  toast.className = 'toast show ' + (type === 'error' ? 'error' : 'success');
+  toast.className = 'toast show';
   clearTimeout(showToast._t);
   showToast._t = setTimeout(() => { toast.classList.remove('show'); }, 2500);
 }
@@ -352,29 +328,18 @@ function handleResize() {
 }
 window.addEventListener('resize', handleResize);
 
-// Jam Real-Time di Kiri Header
+// Jam Real-Time
 function updateClock() {
   const clockEl = document.getElementById('realtimeClock');
-  if (!clockEl) return;
-
   const now = new Date();
   const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
   const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
-  const dayName = days[now.getDay()];
-  const date = String(now.getDate()).padStart(2, '0');
-  const monthName = months[now.getMonth()];
-  const year = now.getFullYear();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-
-  clockEl.textContent = `${dayName}, ${date} ${monthName} ${year} ${hours}:${minutes}:${seconds}`;
+  clockEl.textContent = `${days[now.getDay()]}, ${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]} ${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// Toggle Tema Siang/Malam
+// Toggle Tema
 const themeToggle = document.getElementById('themeToggle');
 themeToggle.addEventListener('click', () => {
   const currentTheme = document.body.getAttribute('data-theme');
@@ -421,7 +386,7 @@ function render(page) {
       }
     });
 
-    // ==== Validasi Running + Countdown ====
+    // ==== Validasi Running ====
     const validationValue = document.getElementById('validationValue');
     const validationStatus = document.getElementById('validationStatus');
     const toggleValidation = document.getElementById('toggleValidation');
@@ -494,6 +459,23 @@ function render(page) {
       } else {
         showToast('Tidak ada reward untuk dikonversi', 'error');
       }
+    });
+
+    // ==== Balance USDT ====
+    const usdtBalance = document.getElementById('usdtBalance');
+    const usdtDeposit = document.getElementById('usdtDeposit');
+    const usdtReward = document.getElementById('usdtReward');
+    const usdtLastUpdate = document.getElementById('usdtLastUpdate');
+    const refreshUsdtBtn = document.getElementById('refreshUsdtBtn');
+
+    refreshUsdtBtn.addEventListener('click', () => {
+      const deposit = 1000; // simulasi total deposit
+      const reward = Math.random() * 300; // simulasi reward
+      usdtDeposit.textContent = `$${deposit.toFixed(2)}`;
+      usdtReward.textContent = `$${reward.toFixed(2)}`;
+      usdtBalance.textContent = `$${(deposit + reward).toFixed(2)}`;
+      usdtLastUpdate.textContent = new Date().toLocaleString();
+      showToast('Saldo USDT diperbarui (simulasi)', 'success');
     });
   }
 }
