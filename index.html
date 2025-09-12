@@ -26,12 +26,12 @@
     .menu li:hover { background: var(--hover); }
     .menu li.active { background: #133a63; color: #fff; border-left-color: var(--accent); }
     .main { margin-left: 240px; display: flex; flex-direction: column; width: 100%; }
-    .header { background: var(--panel-2); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; justify-content: flex-end; align-items: center; gap: 12px; }
+    .header { background: var(--panel-2); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
+    #realtimeClock { font-weight: bold; font-size: 16px; color: var(--accent); }
     .user-info { text-align: right; }
-    .user-info .name { font-weight: 700; font-size: 16px; } /* diperbesar */
-    .user-info .validator { font-size: 14px; color: var(--muted); } /* diperbesar */
+    .user-info .name { font-weight: 700; font-size: 16px; }
+    .user-info .validator { font-size: 14px; color: var(--muted); }
     .avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
-    #realtimeClock { font-weight: bold; font-size: 16px; color: var(--accent); margin-right: 20px; } /* jam lebih besar */
     .content { padding: 20px; flex: 1; }
     .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
     .input, .btn, .table { width: 100%; }
@@ -70,8 +70,8 @@
   <div class="main">
     <div class="header">
       <button class="btn secondary" id="toggleSidebar" style="display:none"><i class="fa fa-bars"></i></button>
-      <div style="flex:1"></div>
       <div id="realtimeClock"></div>
+      <div style="flex:1"></div>
       <div class="user-info"><div class="name">Fery Muliawan</div><div class="validator">Validator ID: 8055x</div></div>
       <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" class="avatar">
     </div>
@@ -241,7 +241,7 @@ function handleResize() {
 }
 window.addEventListener('resize', handleResize);
 
-// Jam Real-Time
+// Jam Real-Time di Kiri Header
 function updateClock() {
   const clockEl = document.getElementById('realtimeClock');
   if (!clockEl) return;
