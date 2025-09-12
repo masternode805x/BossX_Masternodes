@@ -29,14 +29,22 @@
       display: flex; flex-direction: column;
     }
     .brand {
-      padding: 18px 16px; text-align: center; background: var(--panel-2);
+      padding: 18px 16px; background: var(--panel-2);
       border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
     }
     .brand .logo {
-      width: 60px; height: 60px; object-fit: contain; display: block; margin: 0 auto 8px;
+      width: 60px; height: 60px; object-fit: contain;
     }
-    .brand .name { display: block; font-weight: 800; color: var(--accent); letter-spacing: 0.5px; }
-    .brand .tagline { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .brand-text {
+      display: flex; flex-direction: column; line-height: 1.2;
+    }
+    .brand-text .name {
+      font-weight: 800; font-size: 20px; color: var(--accent);
+    }
+    .brand-text .tagline {
+      font-size: 14px; color: var(--muted);
+    }
 
     .menu { list-style: none; padding: 8px 0; margin: 0; flex: 1; }
     .menu li {
@@ -75,8 +83,8 @@
       color: var(--muted);
     }
     .avatar {
-      width: 40px;
-      height: 40px;
+      width: 60px; /* diperbesar setara logo BossX */
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--accent);
@@ -100,8 +108,10 @@
   <aside class="sidebar">
     <div class="brand">
       <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" alt="Logo BossX" class="logo">
-      <span class="name">BossX</span>
-      <small class="tagline">Mining & Masternode</small>
+      <div class="brand-text">
+        <span class="name">BossX</span>
+        <span class="tagline">Software Masternode</span>
+      </div>
     </div>
     <ul class="menu">
       <li class="active"><span class="icon"><i class="fa fa-server"></i></span>Masternode</li>
