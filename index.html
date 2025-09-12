@@ -47,9 +47,45 @@
     .menu li.active { background: #133a63; color: #fff; border-left-color: var(--accent); }
     .menu .icon { width: 18px; text-align: center; }
 
-    /* Konten utama */
+    /* Main area */
     .main {
-      margin-left: 240px; padding: 20px; min-height: 100vh; width: 100%;
+      margin-left: 240px; padding: 0; min-height: 100vh; width: 100%;
+      display: flex; flex-direction: column;
+    }
+
+    /* Header user profile */
+    .header {
+      background: var(--panel-2);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-info {
+      text-align: right;
+    }
+    .user-info .name {
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .user-info .validator {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+
+    /* Konten */
+    .content {
+      padding: 20px;
+      flex: 1;
     }
     .card {
       background: var(--panel); border: 1px solid var(--border);
@@ -60,11 +96,12 @@
   </style>
 </head>
 <body>
+  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="brand">
       <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" alt="Logo BossX" class="logo">
       <span class="name">BossX</span>
-      <small class="tagline">Software Masternode</small>
+      <small class="tagline">Mining & Masternode</small>
     </div>
     <ul class="menu">
       <li class="active"><span class="icon"><i class="fa fa-server"></i></span>Masternode</li>
@@ -75,11 +112,24 @@
     </ul>
   </aside>
 
-  <main class="main">
-    <div class="card">
-      <h1>Masternode</h1>
-      <p class="sub">Halaman ini akan menampilkan log output hybrid mining + masternode secara real-time.</p>
+  <!-- Main content -->
+  <div class="main">
+    <!-- Header dengan user profile -->
+    <div class="header">
+      <div class="user-info">
+        <div class="name">Fery Muliawan</div>
+        <div class="validator">Validator ID: 8055x</div>
+      </div>
+      <img src="https://ibb.co.com/C5P7jSNw" alt="Foto Profil" class="avatar">
     </div>
-  </main>
+
+    <!-- Konten halaman -->
+    <div class="content">
+      <div class="card">
+        <h1>Masternode</h1>
+        <p class="sub">Halaman ini akan menampilkan log output hybrid mining + masternode secara real-time.</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
