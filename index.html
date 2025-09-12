@@ -1,516 +1,448 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BossX Panel</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    /* Mode Siang */
-    body[data-theme="light"] {
-      --bg: linear-gradient(135deg, #6a11cb, #ff0080);
-      --panel: transparent;
-      --panel-2: transparent;
-      --text: #ffffff;
-      --muted: #f5d0fe;
-      --accent: #ffd700;
-      --hover: rgba(255, 255, 255, 0.1);
-      --border: rgba(255, 255, 255, 0.2);
-    }
-    /* Mode Malam */
-    body[data-theme="dark"] {
-      --bg: #000000;
-      --panel: transparent;
-      --panel-2: transparent;
-      --text: #ffd700;
-      --muted: #b8860b;
-      --accent: #ffd700;
-      --hover: rgba(255, 215, 0, 0.15);
-      --border: rgba(255, 215, 0, 0.3);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; display: flex;
-      background: var(--bg);
-      background-attachment: fixed;
-      background-size: cover;
-      color: var(--text);
-      font-family: Inter, sans-serif;
-    }
-    .sidebar {
-      width: 240px; height: 100vh; position: fixed;
-      background: var(--panel);
-      border-right: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      backdrop-filter: blur(8px);
-    }
-    .brand {
-      padding: 18px 16px; background: var(--panel-2);
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 10px;
-    }
-    .brand .logo { width: 60px; height: 60px; object-fit: contain; }
-    .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
-    .brand-text .name { font-weight: 800; font-size: 20px; color: var(--accent); }
-    .brand-text .tagline { font-size: 14px; color: var(--muted); }
-    .menu { list-style: none; padding: 8px 0; margin: 0; flex: 1; }
-    .menu li {
-      padding: 12px 16px; display: flex; align-items: center; gap: 10px;
-      cursor: pointer; border-left: 3px solid transparent;
-      transition: background .15s, border-color .15s;
-    }
-    .menu li:hover { background: var(--hover); }
-    .menu li.active {
-      background: var(--hover);
-      border-left-color: var(--accent);
-      color: var(--accent);
-    }
-    .main { margin-left: 240px; display: flex; flex-direction: column; width: 100%; }
-    .header {
-      background: var(--panel-2);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 20px;
-      display: flex; align-items: center; gap: 12px;
-      backdrop-filter: blur(8px);
-    }
-    #realtimeClock { font-weight: bold; font-size: 16px; color: var(--accent); }
-    .user-info { text-align: right; }
-    .user-info .name { font-weight: 700; font-size: 16px; }
-    .user-info .validator { font-size: 14px; color: var(--muted); }
-    .avatar {
-      width: 60px; height: 60px; border-radius: 50%;
-      object-fit: cover; border: 2px solid var(--accent);
-    }
-    .content { padding: 20px; flex: 1; }
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px; padding: 16px;
-      backdrop-filter: blur(8px);
-    }
-    .input, .btn, .table { width: 100%; }
-    .input {
-      padding: 10px; border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--panel-2); color: var(--text);
-      margin-bottom: 10px;
-    }
-    .btn {
-      padding: 10px 16px; border-radius: 6px; border: none;
-      cursor: pointer; background: var(--accent);
-      color: #000; font-weight: 600;
-    }
-    .btn.secondary { background: #2b3646; color: var(--text); }
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .table { border-collapse: collapse; }
-    .table th, .table td {
-      padding: 10px; border: 1px solid var(--border); text-align: left;
-    }
-    .table thead tr { background: var(--panel-2); }
-    .log-container {
-      background: #000; color: #00ff88; font-family: monospace;
-      font-size: 13px; padding: 10px; border-radius: 6px;
-      border: 1px solid var(--border); height: 300px; overflow-y: auto;
-    }
-    .toast {
-      position: fixed; right: 20px; bottom: 20px;
-      padding: 12px 14px; background: var(--panel-2);
-      color: var(--text); border: 1px solid var(--border);
-      border-left: 4px solid var(--accent); border-radius: 8px;
-      opacity: 0; transform: translateY(10px);
-      transition: opacity .2s, transform .2s;
-      max-width: 320px; z-index: 1000;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .deposit-grid { display: flex; gap: 20px; flex-wrap: wrap; }
-    .deposit-col { flex: 1; min-width: 300px; }
-    .wallet-box { display: flex; align-items: center; gap: 10px; }
-    /* Efek transisi halus */
-    body, .sidebar, .header, .card, .menu li, .btn, .input, .table th, .table td {
-      transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease;
-    }
-    @media (max-width: 720px) {
-      .sidebar { position: fixed; transform: translateX(-100%); transition: transform .2s; z-index: 100; }
-      .sidebar.open { transform: translateX(0); }
-      .main { margin-left: 0; }
-    }
-  </style>
-</head>
-<body data-theme="light">
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <img src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png" class="logo">
-      <div class="brand-text">
-        <span class="name">BossX</span>
-        <span class="tagline">Software Masternode</span>
-      </div>
-    </div>
-    <ul class="menu" id="menu">
-      <li class="active" data-page="masternode"><i class="fa fa-server"></i> Masternode</li>
-      <li data-page="deposit"><i class="fa fa-wallet"></i> Deposit</li>
-      <li data-page="withdrawal"><i class="fa fa-money-bill-transfer"></i> Withdrawal</li>
-      <li data-page="p2p"><i class="fa fa-exchange-alt"></i> Peer to Peer</li>
-      <li data-page="settings"><i class="fa fa-cog"></i> Settings</li>
-    </ul>
-  </aside>
-
-  <div class="main">
-    <div class="header">
-      <!-- Tombol sidebar untuk mobile -->
-      <button class="btn secondary" id="toggleSidebar" style="display:none">
-        <i class="fa fa-bars"></i>
-      </button>
-
-      <!-- Jam real-time di kiri -->
-      <div id="realtimeClock"></div>
-
-      <!-- Spacer -->
-      <div style="flex:1"></div>
-
-      <!-- Info user -->
-      <div class="user-info">
-        <div class="name">Fery Muliawan</div>
-        <div class="validator">Validator ID: 8055x</div>
-      </div>
-
-      <!-- Foto profil -->
-      <img src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg" class="avatar">
-
-      <!-- Tombol toggle tema -->
-      <button id="themeToggle" class="btn secondary" 
-        style="width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin-left:8px;">
-        <i class="fa fa-adjust"></i>
-      </button>
-    </div>
-
-    <!-- Konten utama -->
-    <div class="content" id="content"></div>
+<!-- Halaman Masternode -->
+<div class="masternode-cards">
+  
+  <!-- Card 1: Node Amount -->
+  <div class="card-enhanced glow">
+    <h2 style="color:var(--accent)"><i class="fa fa-cubes"></i> Node Amount</h2>
+    <p id="nodeAmountDisplay" style="font-size:18px;font-weight:bold;margin:5px 0;">0 BossX</p>
+    <input class="input" type="number" id="masternodeAmount" placeholder="minimal 50 BossX" min="0">
+    <button class="btn" id="activateMasternode" disabled>Aktivkan Masternode</button>
   </div>
 
-  <!-- Toast notification -->
-  <div id="toast" class="toast"></div>
-<script>
-const menuItems = document.querySelectorAll('#menu li');
-const content = document.getElementById('content');
+  <!-- Card 2: Validasi Running -->
+  <div class="card-enhanced">
+    <h2 style="color:var(--accent)"><i class="fa fa-bolt"></i> Validasi Running</h2>
+    <p id="validationValue" style="font-size:18px;font-weight:bold;margin:5px 0;">0.0000000000 BossX</p>
+    <p id="validationStatus" style="color:var(--muted); margin-bottom:15px;">Belum berjalan</p>
+    <button id="toggleValidation" style="background:#2b3646; border:none; border-radius:50%; width:60px; height:60px; font-size:22px; color:#fff; cursor:pointer;">
+      <i class="fa fa-power-off"></i>
+    </button>
+  </div>
 
-const pages = {
-  masternode: `
-    <div style="display:flex; gap:20px; flex-wrap:wrap;">
-      <!-- Card Aktivasi Masternode -->
-      <div class="card" style="flex:1; min-width:280px;">
-        <h2 style="color:var(--accent)">Node Amount</h2>
-        <p id="nodeAmountDisplay" style="font-size:18px;font-weight:bold;margin:5px 0;">0 BossX</p>
-        <input class="input" type="number" id="masternodeAmount" placeholder="minimal 50 BossX" min="0">
-        <button class="btn" id="activateMasternode" disabled>Aktivkan Masternode</button>
-      </div>
+  <!-- Card 3: Reward Validasi -->
+  <div class="card-enhanced">
+    <h2 style="color:var(--accent)"><i class="fa fa-gift"></i> Reward Validasi</h2>
+    <p id="rewardValue" style="font-size:18px;font-weight:bold;margin:5px 0;">0.0000000000 BossX</p>
+    <p id="autoClaimText" style="color:var(--muted); margin-bottom:15px;">Auto-claim: <span id="autoClaimCountdown">60</span>s</p>
+    <button id="convertBtn" style="background:var(--accent); border:none; border-radius:6px; padding:10px 16px; font-weight:bold; cursor:pointer; color:#000;">
+      Convert to USDT
+    </button>
+  </div>
 
-      <!-- Card Validasi Running -->
-      <div class="card" style="flex:1; min-width:280px; text-align:center;">
-        <h2 style="color:var(--accent)">Validasi Running</h2>
-        <p id="validationValue" style="font-size:18px;font-weight:bold;margin:5px 0;">0.0000000000 BossX</p>
-        <p id="validationStatus" style="color:var(--muted); margin-bottom:15px;">Belum berjalan</p>
-        <button id="toggleValidation" style="background:#2b3646; border:none; border-radius:50%; width:60px; height:60px; font-size:22px; color:#fff; cursor:pointer;">
-          <i class="fa fa-power-off"></i>
-        </button>
-      </div>
-
-      <!-- Card Reward Validasi -->
-      <div class="card" style="flex:1; min-width:280px; text-align:center;">
-        <h2 style="color:var(--accent)">Reward Validasi</h2>
-        <p id="rewardValue" style="font-size:18px;font-weight:bold;margin:5px 0;">0.0000000000 BossX</p>
-        <p id="autoClaimText" style="color:var(--muted); margin-bottom:15px;">Auto-claim: <span id="autoClaimCountdown">60</span>s</p>
-        <button id="convertBtn" style="background:var(--accent); border:none; border-radius:6px; padding:10px 16px; font-weight:bold; cursor:pointer; color:#000;">
-          Convert to USDT
-        </button>
-      </div>
+  <!-- Card 4: Balance USDT -->
+  <div class="card-enhanced">
+    <h2 style="color:var(--accent)"><i class="fa fa-dollar-sign"></i> Balance USDT</h2>
+    <p id="usdtBalance" style="font-size:22px; font-weight:bold; margin-bottom:10px;">$1,250.00</p>
+    <div style="font-size:14px; color:var(--muted); line-height:1.6;">
+      <div>Total Deposit: <span id="usdtDeposit">$1,000.00</span></div>
+      <div>Total Reward: <span id="usdtReward">$250.00</span></div>
+      <div>Last Update: <span id="usdtLastUpdate">12 Sep 2025, 14:56</span></div>
     </div>
+    <button class="btn secondary" onclick="refreshUSDT()">Refresh</button>
+  </div>
 
-    <!-- Log Masternode -->
-    <div class="card" style="margin-top:20px;">
-      <h2 style="color:var(--accent)">Log Masternode</h2>
-      <div class="log-container" id="logContainer">
+</div>
+
+<!-- Log Masternode -->
+<div class="card" style="margin-top:20px;">
+  <h2 style="color:var(--accent)"><i class="fa fa-terminal"></i> Log Masternode</h2>
+  <div class="log-container" id="logContainer">
 <pre class="log-output" id="logOutput">
 [${new Date().toLocaleString()}] Masternode panel siap...
 </pre>
-      </div>
-    </div>
-  `,
-
-  deposit: `
-    <div class="deposit-grid">
-      <!-- Deposit USDT -->
-      <div class="card deposit-col">
-        <h2 style="color:var(--accent)">Deposit USDT</h2>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=USDT_WALLET_ADDRESS" alt="QR USDT" style="margin:10px 0;">
-        <div class="wallet-box">
-          <input class="input" type="text" id="usdtAddress" value="TRC20-ADDRESS-USDT" readonly>
-          <button class="btn secondary" onclick="copyAddress('usdtAddress')"><i class="fa fa-copy"></i></button>
-        </div>
-        <h3 style="margin-top:15px; color:var(--accent)">Riwayat Deposit USDT</h3>
-        <table class="table">
-          <thead>
-            <tr><th>Waktu</th><th>Jumlah</th><th>Status</th></tr>
-          </thead>
-          <tbody id="usdtHistory">
-            <tr><td>Jum, 12-09-2025 10:35:20</td><td>100 USDT</td><td style="color:var(--success)">Sukses</td></tr>
-            <tr><td>Kam, 11-09-2025 14:12:05</td><td>50 USDT</td><td style="color:orange">Pending</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Deposit BOSSX -->
-      <div class="card deposit-col">
-        <h2 style="color:var(--accent)">Deposit BOSSX</h2>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BOSSX_WALLET_ADDRESS" alt="QR BOSSX" style="margin:10px 0;">
-        <div class="wallet-box">
-          <input class="input" type="text" id="bossxAddress" value="BOSSX-ADDRESS" readonly>
-          <button class="btn secondary" onclick="copyAddress('bossxAddress')"><i class="fa fa-copy"></i></button>
-        </div>
-        <h3 style="margin-top:15px; color:var(--accent)">Riwayat Deposit BOSSX</h3>
-        <table class="table">
-          <thead>
-            <tr><th>Waktu</th><th>Jumlah</th><th>Status</th></tr>
-          </thead>
-          <tbody id="bossxHistory">
-            <tr><td>Jum, 12-09-2025 09:20:10</td><td>250 BOSSX</td><td style="color:var(--success)">Sukses</td></tr>
-            <tr><td>Rab, 10-09-2025 16:45:55</td><td>100 BOSSX</td><td style="color:orange">Pending</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `,
-
-  withdrawal: `
-    <div class="card">
-      <h1 style="color:var(--accent)">Withdrawal</h1>
-      <p class="sub">Form penarikan saldo dari akun BossX Anda.</p>
-      <input class="input" type="number" placeholder="Jumlah (contoh: 50)">
-      <input class="input" type="text" placeholder="Alamat Wallet (contoh: BOSSX1abc...)">
-      <button class="btn" onclick="showToast('Permintaan penarikan diproses (simulasi).','success')">Tarik Saldo</button>
-    </div>
-  `,
-
-  p2p: `
-    <div class="card">
-      <h1 style="color:var(--accent)">Peer to Peer</h1>
-      <p class="sub">Daftar order jual/beli BossX Coin.</p>
-      <table class="table">
-        <thead>
-          <tr><th>Tipe</th><th>Harga</th><th>Jumlah</th><th>Aksi</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Beli</td><td>1.25 USDT</td><td>500 BOSSX</td><td><button class="btn secondary" onclick="showToast('Aksi Jual dipilih (simulasi).','success')">Jual</button></td></tr>
-          <tr><td>Jual</td><td>1.30 USDT</td><td>300 BOSSX</td><td><button class="btn secondary" onclick="showToast('Aksi Beli dipilih (simulasi).','success')">Beli</button></td></tr>
-        </tbody>
-      </table>
-    </div>
-  `,
-
-  settings: `
-    <div class="card">
-      <h1 style="color:var(--accent)">Settings</h1>
-      <p class="sub">Pengaturan akun dan preferensi.</p>
-      <label>Nama Pengguna</label>
-      <input class="input" type="text" value="Fery Muliawan">
-      <label>Email</label>
-      <input class="input" type="email" placeholder="email@domain.com">
-      <label>Password Baru</label>
-      <input class="input" type="password" placeholder="********">
-      <button class="btn" onclick="showToast('Pengaturan disimpan (simulasi).','success')">Simpan Perubahan</button>
-    </div>
-  `
-};
-// Copy Address
-function copyAddress(id) {
-  const input = document.getElementById(id);
-  input.select();
-  input.setSelectionRange(0, 99999);
-  document.execCommand("copy");
-  showToast("Alamat berhasil disalin!", "success");
+  </div>
+</div>
+/* ====== Container Card Masternode ====== */
+.masternode-cards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: stretch; /* semua card ikut tinggi tertinggi */
 }
 
-// Toast Notification
-const toast = document.getElementById('toast');
-function showToast(message, type = 'success') {
+/* ====== Card Khusus Masternode ====== */
+.masternode-cards .card-enhanced {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  animation: fadeInUp 0.5s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(20, 20, 30, 0.8);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* Hover interaktif */
+.masternode-cards .card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 15px var(--accent);
+}
+
+/* Glow khusus card utama */
+.masternode-cards .card-enhanced.glow {
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 12px var(--accent);
+}
+
+/* Animasi masuk */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsif tablet */
+@media (max-width: 1024px) {
+  .masternode-cards .card-enhanced { flex: 1 1 calc(50% - 20px); }
+}
+
+/* Responsif mobile */
+@media (max-width: 600px) {
+  .masternode-cards .card-enhanced { flex: 1 1 100%; }
+}
+
+/* Pastikan tombol di bagian bawah sejajar */
+.masternode-cards .card-enhanced button {
+  margin-top: auto;
+}
+// ==== Fungsi Toast Notifikasi ====
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
   toast.textContent = message;
-  toast.className = 'toast show ' + (type === 'error' ? 'error' : 'success');
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => { toast.classList.remove('show'); }, 2500);
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.classList.add('show'); }, 100);
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
 }
 
-// Sidebar Responsif
-const sidebar = document.getElementById('sidebar');
-const toggleSidebar = document.getElementById('toggleSidebar');
-function handleResize() {
-  if (window.innerWidth <= 720) {
-    toggleSidebar.style.display = 'inline-flex';
-    toggleSidebar.onclick = () => sidebar.classList.toggle('open');
+// ==== Fungsi Animasi Angka Khusus Master ====
+// p = progress animasi (0 → 1)
+function animateCustomValue(el, duration, prefix = '', suffix = '', calcFn) {
+  let startTimestamp = null;
+  const step = (timestamp) => {
+    if (!startTimestamp) startTimestamp = timestamp;
+    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+    const value = calcFn(progress); // Hitungan khusus Master
+    el.textContent = prefix + value + suffix;
+    if (progress < 1) {
+      window.requestAnimationFrame(step);
+    }
+  };
+  window.requestAnimationFrame(step);
+}
+// ==== Node Amount ====
+const nodeAmountInput = document.getElementById('masternodeAmount');
+const nodeAmountDisplay = document.getElementById('nodeAmountDisplay');
+const activateBtn = document.getElementById('activateMasternode');
+
+// Update tampilan jumlah node saat input berubah
+nodeAmountInput.addEventListener('input', () => {
+  const val = parseFloat(nodeAmountInput.value) || 0;
+  nodeAmountDisplay.textContent = `${val} BossX`;
+  activateBtn.disabled = val < 50; // minimal 50 BossX
+});
+
+// Aktivasi Masternode
+activateBtn.addEventListener('click', () => {
+  const val = parseFloat(nodeAmountInput.value) || 0;
+  if (val >= 50) {
+    showToast(`Masternode diaktifkan dengan ${val} BossX`, 'success');
+    logAction(`Masternode aktif — ${val} BossX`);
   } else {
-    toggleSidebar.style.display = 'none';
-    sidebar.classList.remove('open');
+    showToast('Minimal 50 BossX untuk aktivasi', 'error');
   }
-}
-window.addEventListener('resize', handleResize);
-
-// Jam Real-Time di Kiri Header
-function updateClock() {
-  const clockEl = document.getElementById('realtimeClock');
-  if (!clockEl) return;
-
-  const now = new Date();
-  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
-  const dayName = days[now.getDay()];
-  const date = String(now.getDate()).padStart(2, '0');
-  const monthName = months[now.getMonth()];
-  const year = now.getFullYear();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-
-  clockEl.textContent = `${dayName}, ${date} ${monthName} ${year} ${hours}:${minutes}:${seconds}`;
-}
-setInterval(updateClock, 1000);
-updateClock();
-
-// Toggle Tema Siang/Malam
-const themeToggle = document.getElementById('themeToggle');
-themeToggle.addEventListener('click', () => {
-  const currentTheme = document.body.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  document.body.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
 });
-(function initTheme() {
-  const savedTheme = localStorage.getItem('theme');
-  document.body.setAttribute('data-theme', savedTheme ? savedTheme : 'light');
-})();
-// Render Halaman
-function render(page) {
-  content.innerHTML = pages[page] || '<div class="card"><h1>Halaman kosong</h1></div>';
 
-  if (page === 'masternode') {
-    // ==== Aktivasi Masternode ====
-    const amountInput = document.getElementById('masternodeAmount');
-    const btnActivate = document.getElementById('activateMasternode');
-    const nodeAmountDisplay = document.getElementById('nodeAmountDisplay');
-    const logOutput = document.getElementById('logOutput');
-    let activated = false;
+// ==== Validasi Running ====
+const validationValueEl = document.getElementById('validationValue');
+const validationStatusEl = document.getElementById('validationStatus');
+const toggleValidationBtn = document.getElementById('toggleValidation');
 
-    amountInput.addEventListener('input', () => {
-      if (!activated) {
-        const val = parseFloat(amountInput.value);
-        btnActivate.disabled = !(val >= 50);
-      }
-    });
+let validationRunning = false;
+let validationInterval = null;
 
-    btnActivate.addEventListener('click', () => {
-      if (activated) return;
-      const val = parseFloat(amountInput.value);
-      if (val >= 50) {
-        activated = true;
-        nodeAmountDisplay.textContent = `${val} BossX`;
-        showToast(`Masternode diaktifkan dengan ${val} BossX (simulasi)`, 'success');
-        logOutput.textContent += `\n[${new Date().toLocaleString()}] Masternode diaktifkan dengan ${val} BossX`;
-        document.getElementById('logContainer').scrollTop = document.getElementById('logContainer').scrollHeight;
-        amountInput.disabled = true;
-        btnActivate.disabled = true;
-      } else {
-        showToast('Minimal 50 BossX untuk aktivasi', 'error');
-      }
-    });
-
-    // ==== Validasi Running + Countdown ====
-    const validationValue = document.getElementById('validationValue');
-    const validationStatus = document.getElementById('validationStatus');
-    const toggleValidation = document.getElementById('toggleValidation');
-    let validationOn = false;
-    let validationInterval;
-    let countdownInterval;
-
-    function getNext6AM() {
-      const now = new Date();
-      let target = new Date();
-      target.setHours(6, 0, 0, 0);
-      if (now >= target) target.setDate(target.getDate() + 1);
-      return target;
-    }
-
-    function updateCountdown(targetTime) {
-      const now = new Date();
-      let diff = Math.max(0, targetTime - now);
-      const hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
-      const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-      const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
-      return `${hours}:${minutes}:${seconds}`;
-    }
-
-    toggleValidation.addEventListener('click', () => {
-      validationOn = !validationOn;
-      if (validationOn) {
-        toggleValidation.style.background = 'var(--accent)';
-        const targetTime = getNext6AM();
-        validationStatus.innerHTML = `STOP VALIDASI JAM 06.00<br><span id="countdown" style="font-size:16px;color:var(--muted);"></span>`;
-        let val = 0;
-        validationInterval = setInterval(() => {
-          val += Math.random() * 0.0000001000;
-          validationValue.textContent = val.toFixed(10) + ' BossX';
-        }, 1000);
-        const countdownEl = document.getElementById('countdown');
-        const tick = () => { countdownEl.textContent = updateCountdown(targetTime); };
-        tick();
-        countdownInterval = setInterval(tick, 1000);
-      } else {
-        toggleValidation.style.background = '#2b3646';
-        validationStatus.textContent = 'Belum berjalan';
-        validationStatus.style.color = 'var(--muted)';
-        clearInterval(validationInterval);
-        clearInterval(countdownInterval);
-      }
-    });
-
-    // ==== Reward Validasi ====
-    const rewardValue = document.getElementById('rewardValue');
-    const autoClaimCountdown = document.getElementById('autoClaimCountdown');
-    const convertBtn = document.getElementById('convertBtn');
-    let rewardBossX = 0;
-    let countdown = 60;
-    setInterval(() => {
-      countdown--;
-      if (countdown <= 0) {
-        rewardBossX += Math.random() * 0.0000005000;
-        rewardValue.textContent = rewardBossX.toFixed(10) + ' BossX';
-        countdown = 60;
-      }
-      autoClaimCountdown.textContent = countdown;
-    }, 1000);
-
-    convertBtn.addEventListener('click', () => {
-      if (rewardBossX > 0) {
-        showToast(`Convert ${rewardBossX.toFixed(10)} BossX ke USDT (simulasi)`, 'success');
-        rewardBossX = 0;
-        rewardValue.textContent = '0.0000000000 BossX';
-      } else {
-        showToast('Tidak ada reward untuk dikonversi', 'error');
-      }
-    });
+toggleValidationBtn.addEventListener('click', () => {
+  validationRunning = !validationRunning;
+  if (validationRunning) {
+    validationStatusEl.textContent = 'Berjalan';
+    validationStatusEl.style.color = 'var(--accent)';
+    startValidation();
+    showToast('Validasi dimulai', 'success');
+    logAction('Validasi dimulai');
+  } else {
+    validationStatusEl.textContent = 'Berhenti';
+    validationStatusEl.style.color = 'var(--muted)';
+    stopValidation();
+    showToast('Validasi dihentikan', 'info');
+    logAction('Validasi dihentikan');
   }
+});
+
+function startValidation() {
+  let reward = 0;
+  validationInterval = setInterval(() => {
+    reward += 0.0000000001; // contoh kenaikan
+    validationValueEl.textContent = `${reward.toFixed(10)} BossX`;
+  }, 1000);
 }
 
-// Event Menu
-menuItems.forEach(item => {
-  item.addEventListener('click', () => {
-    menuItems.forEach(i => i.classList.remove('active'));
-    item.classList.add('active');
-    render(item.dataset.page);
-    if (window.innerWidth <= 720) sidebar.classList.remove('open');
+function stopValidation() {
+  clearInterval(validationInterval);
+}
+// ==== Reward Validasi ====
+const rewardValueEl = document.getElementById('rewardValue');
+const autoClaimCountdownEl = document.getElementById('autoClaimCountdown');
+const convertBtn = document.getElementById('convertBtn');
+
+let autoClaimTime = 60; // detik
+let autoClaimTimer = null;
+
+// Hitungan khusus Master untuk reward (contoh linear, ganti sesuai rumus)
+function rewardCalc(progress) {
+  // progress: 0 → 1
+  return (0.0000000000 + (progress * 0.0001234567)).toFixed(10);
+}
+
+// Jalankan animasi reward saat halaman dimuat
+animateCustomValue(rewardValueEl, 1500, '', ' BossX', rewardCalc);
+
+// Auto‑claim countdown
+function startAutoClaimCountdown() {
+  clearInterval(autoClaimTimer);
+  autoClaimTime = 60;
+  autoClaimCountdownEl.textContent = autoClaimTime;
+  autoClaimTimer = setInterval(() => {
+    autoClaimTime--;
+    autoClaimCountdownEl.textContent = autoClaimTime;
+    if (autoClaimTime <= 0) {
+      clearInterval(autoClaimTimer);
+      autoClaimReward();
+    }
+  }, 1000);
+}
+
+// Fungsi auto‑claim reward
+function autoClaimReward() {
+  showToast('Reward otomatis diklaim', 'success');
+  logAction('Reward otomatis diklaim');
+  // Reset reward ke 0 (atau sesuai logika Master)
+  rewardValueEl.textContent = '0.0000000000 BossX';
+  startAutoClaimCountdown();
+}
+
+// Tombol convert manual
+convertBtn.addEventListener('click', () => {
+  showToast('Reward dikonversi ke USDT', 'success');
+  logAction('Reward dikonversi ke USDT');
+  rewardValueEl.textContent = '0.0000000000 BossX';
+  startAutoClaimCountdown();
+});
+
+// Mulai countdown saat halaman dimuat
+startAutoClaimCountdown();
+// ==== Balance USDT ====
+const usdtBalanceEl = document.getElementById('usdtBalance');
+const usdtDepositEl = document.getElementById('usdtDeposit');
+const usdtRewardEl = document.getElementById('usdtReward');
+const usdtLastUpdateEl = document.getElementById('usdtLastUpdate');
+
+// Hitungan khusus Master untuk saldo USDT
+function usdtCalc(progress) {
+  const deposit = 1000; // contoh saldo awal
+  const reward = 250;   // contoh reward total
+  return (deposit + (reward * progress)).toFixed(2);
+}
+
+// Animasi saldo saat halaman dimuat
+animateCustomValue(usdtBalanceEl, 1500, '$', '', usdtCalc);
+
+// Fungsi refresh saldo
+function refreshUSDT() {
+  // Simulasi update data — nanti bisa ganti dengan fetch API
+  const newDeposit = 1000;
+  const newReward = Math.random() * 300; // contoh random
+  const newBalance = newDeposit + newReward;
+
+  usdtDepositEl.textContent = `$${newDeposit.toFixed(2)}`;
+  usdtRewardEl.textContent = `$${newReward.toFixed(2)}`;
+  usdtLastUpdateEl.textContent = new Date().toLocaleString();
+
+  animateCustomValue(usdtBalanceEl, 1000, '$', '', () => newBalance.toFixed(2));
+
+  showToast('Saldo USDT diperbarui', 'success');
+  logAction(`Saldo USDT diperbarui menjadi $${newBalance.toFixed(2)}`);
+}
+// ==== Log Masternode ====
+const logOutputEl = document.getElementById('logOutput');
+const logContainerEl = document.getElementById('logContainer');
+
+// Fungsi menambah log baru
+function logAction(message) {
+  const timestamp = new Date().toLocaleString();
+  logOutputEl.textContent += `\n[${timestamp}] ${message}`;
+  logContainerEl.scrollTop = logContainerEl.scrollHeight; // auto scroll ke bawah
+}
+
+// Contoh log awal
+logAction('Panel Masternode dimuat');
+
+// ==== Styling tambahan untuk log (opsional, aman) ====
+// Bisa dimasukkan ke CSS global atau inline style
+/*
+.log-container {
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 6px;
+}
+.log-output {
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  color: #ccc;
+}
+*/
+// ==== Inisialisasi Halaman Masternode ====
+function initMasternodePage() {
+  // Log awal
+  logAction('Halaman Masternode dibuka');
+
+  // Animasi awal angka reward & saldo USDT
+  animateCustomValue(rewardValueEl, 1500, '', ' BossX', rewardCalc);
+  animateCustomValue(usdtBalanceEl, 1500, '$', '', usdtCalc);
+
+  // Mulai auto-claim countdown
+  startAutoClaimCountdown();
+
+  // Pastikan tombol aktivasi sesuai input awal
+  const initialVal = parseFloat(nodeAmountInput.value) || 0;
+  activateBtn.disabled = initialVal < 50;
+
+  // Reset status validasi
+  validationRunning = false;
+  validationStatusEl.textContent = 'Belum berjalan';
+  validationStatusEl.style.color = 'var(--muted)';
+
+  // Bersihkan interval jika ada
+  if (validationInterval) clearInterval(validationInterval);
+  if (autoClaimTimer) clearInterval(autoClaimTimer);
+
+  // Mulai ulang auto-claim
+  startAutoClaimCountdown();
+}
+
+// ==== Panggil init saat halaman Masternode dimuat ====
+document.addEventListener('DOMContentLoaded', () => {
+  // Cek apakah elemen masternode ada di DOM
+  if (document.querySelector('.masternode-cards')) {
+    initMasternodePage();
+  }
+});
+/* ====== Toast Notifikasi ====== */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: rgba(20, 20, 30, 0.95);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.toast.success { border-left-color: #4caf50; }
+.toast.error { border-left-color: #f44336; }
+.toast.info { border-left-color: var(--accent); }
+
+/* ====== Log Container ====== */
+.log-container {
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 6px;
+}
+.log-output {
+  font-family: monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  color: #ccc;
+}
+
+/* ====== Tombol Umum ====== */
+.btn {
+  background: var(--accent);
+  color: #000;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.btn:hover {
+  background: gold;
+}
+.btn.secondary {
+  background: #2b3646;
+  color: #fff;
+}
+.btn.secondary:hover {
+  background: #3a4a5f;
+}
+
+/* ====== Input Umum ====== */
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  margin-bottom: 10px;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 5px var(--accent);
+}
+<!-- ====== Integrasi Halaman Masternode BossX ====== -->
+<style>
+  /* Masukkan CSS dari Bagian 2 dan Bagian 9 di sini */
+</style>
+
+<div class="masternode-cards">
+  <!-- Masukkan HTML dari Bagian 1 di sini -->
+</div>
+
+<div class="card" style="margin-top:20px;">
+  <!-- Log Masternode dari Bagian 1 -->
+</div>
+
+<script>
+  // Masukkan fungsi umum & animasi angka (Bagian 3)
+  // Masukkan interaksi Node Amount & Validasi (Bagian 4)
+  // Masukkan interaksi Reward & Auto-Claim (Bagian 5)
+  // Masukkan interaksi Balance USDT (Bagian 6)
+  // Masukkan log & utility (Bagian 7)
+  // Masukkan inisialisasi halaman (Bagian 8)
+
+  // Pastikan initMasternodePage() terpanggil saat halaman dimuat
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.querySelector('.masternode-cards')) {
+      initMasternodePage();
+    }
   });
-});
-
-// Init
-handleResize();
-render('masternode');
 </script>
-</body>
-</html>
