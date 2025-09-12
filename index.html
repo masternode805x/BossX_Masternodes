@@ -1,448 +1,228 @@
-<!-- Halaman Masternode -->
-<div class="masternode-cards">
-  
-  <!-- Card 1: Node Amount -->
-  <div class="card-enhanced glow">
-    <h2 style="color:var(--accent)"><i class="fa fa-cubes"></i> Node Amount</h2>
-    <p id="nodeAmountDisplay" style="font-size:18px;font-weight:bold;margin:5px 0;">0 BossX</p>
-    <input class="input" type="number" id="masternodeAmount" placeholder="minimal 50 BossX" min="0">
-    <button class="btn" id="activateMasternode" disabled>Aktivkan Masternode</button>
-  </div>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>BossX Masternode Panel</title>
+  <style>
+    :root {
+      --accent: #c09eff;
+      --muted: #9aa3b2;
+      --gold: #ffd700;
+      --pink: #ff4fd8;
+    }
+    body {
+      background: #0e0e14;
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+    }
+    .masternode-cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .card-enhanced {
+      flex: 1 1 calc(25% - 20px);
+      min-width: 240px;
+      background: rgba(20,20,30,0.55);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: all 0.4s ease;
+    }
+    .card-enhanced:hover {
+      box-shadow: 0 0 20px var(--accent), 0 0 40px var(--pink), 0 0 60px var(--gold);
+      transform: translateY(-6px);
+    }
+    .card-enhanced.glow {
+      border: 1px solid var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+    }
+    .btn {
+      background: var(--accent);
+      color: #000;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn:hover { background: var(--gold); }
+    .btn.secondary {
+      background: #2b3646;
+      color: #fff;
+    }
+    .btn.secondary:hover { background: #3a4a5f; }
+    .input {
+      width: 100%;
+      padding: 6px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 5px var(--accent);
+    }
+    .log-container {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 6px;
+    }
+    .log-output {
+      font-family: monospace;
+      font-size: 13px;
+      color: #ccc;
+      white-space: pre-wrap;
+    }
+    .log-success { color: #4caf50; }
+    .log-info { color: var(--accent); }
+    .log-error { color: #f44336; }
+  </style>
+</head>
+<body>
 
-  <!-- Card 2: Validasi Running -->
-  <div class="card-enhanced">
-    <h2 style="color:var(--accent)"><i class="fa fa-bolt"></i> Validasi Running</h2>
-    <p id="validationValue" style="font-size:18px;font-weight:bold;margin:5px 0;">0.0000000000 BossX</p>
-    <p id="validationStatus" style="color:var(--muted); margin-bottom:15px;">Belum berjalan</p>
-    <button id="toggleValidation" style="background:#2b3646; border:none; border-radius:50%; width:60px; height:60px; font-size:22px; color:#fff; cursor:pointer;">
-      <i class="fa fa-power-off"></i>
-    </button>
-  </div>
-
-  <!-- Card 3: Reward Validasi -->
-  <div class="card-enhanced">
-    <h2 style="color:var(--accent)"><i class="fa fa-gift"></i> Reward Validasi</h2>
-    <p id="rewardValue" style="font-size:18px;font-weight:bold;margin:5px 0;">0.0000000000 BossX</p>
-    <p id="autoClaimText" style="color:var(--muted); margin-bottom:15px;">Auto-claim: <span id="autoClaimCountdown">60</span>s</p>
-    <button id="convertBtn" style="background:var(--accent); border:none; border-radius:6px; padding:10px 16px; font-weight:bold; cursor:pointer; color:#000;">
-      Convert to USDT
-    </button>
-  </div>
-
-  <!-- Card 4: Balance USDT -->
-  <div class="card-enhanced">
-    <h2 style="color:var(--accent)"><i class="fa fa-dollar-sign"></i> Balance USDT</h2>
-    <p id="usdtBalance" style="font-size:22px; font-weight:bold; margin-bottom:10px;">$1,250.00</p>
-    <div style="font-size:14px; color:var(--muted); line-height:1.6;">
-      <div>Total Deposit: <span id="usdtDeposit">$1,000.00</span></div>
-      <div>Total Reward: <span id="usdtReward">$250.00</span></div>
-      <div>Last Update: <span id="usdtLastUpdate">12 Sep 2025, 14:56</span></div>
+  <div class="masternode-cards">
+    <div class="card-enhanced glow">
+      <h3>Node Amount</h3>
+      <p id="nodeAmountDisplay">0 BossX</p>
+      <input class="input" type="number" id="masternodeAmount" placeholder="minimal 50 BossX">
+      <button class="btn" id="activateMasternode" disabled>Aktivkan</button>
     </div>
-    <button class="btn secondary" onclick="refreshUSDT()">Refresh</button>
+    <div class="card-enhanced">
+      <h3>Validasi Running</h3>
+      <p id="validationValue">0.0000000000 BossX</p>
+      <p id="validationStatus" style="color:var(--muted)">Belum berjalan</p>
+      <button class="btn secondary" id="toggleValidation">⏻</button>
+    </div>
+    <div class="card-enhanced">
+      <h3>Reward Validasi</h3>
+      <p id="rewardValue">0.0000000000 BossX</p>
+      <p>Auto-claim: <span id="autoClaimCountdown">60</span>s</p>
+      <button class="btn" id="convertBtn">Convert</button>
+    </div>
+    <div class="card-enhanced">
+      <h3>Balance USDT</h3>
+      <p id="usdtBalance">$0.00</p>
+      <div>Total Deposit: <span id="usdtDeposit">$0.00</span></div>
+      <div>Total Reward: <span id="usdtReward">$0.00</span></div>
+      <div>Last Update: <span id="usdtLastUpdate">-</span></div>
+      <button class="btn secondary" id="refreshUsdtBtn">Refresh</button>
+    </div>
   </div>
 
-</div>
-
-<!-- Log Masternode -->
-<div class="card" style="margin-top:20px;">
-  <h2 style="color:var(--accent)"><i class="fa fa-terminal"></i> Log Masternode</h2>
-  <div class="log-container" id="logContainer">
-<pre class="log-output" id="logOutput">
-[${new Date().toLocaleString()}] Masternode panel siap...
-</pre>
+  <div class="card-enhanced" style="margin-top:20px;">
+    <h3>Log Masternode</h3>
+    <div class="log-container">
+      <pre class="log-output" id="logOutput">[Init] Masternode siap...</pre>
+    </div>
   </div>
-</div>
-/* ====== Container Card Masternode ====== */
-.masternode-cards {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  align-items: stretch; /* semua card ikut tinggi tertinggi */
-}
 
-/* ====== Card Khusus Masternode ====== */
-.masternode-cards .card-enhanced {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  animation: fadeInUp 0.5s ease;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background: rgba(20, 20, 30, 0.8);
-  border-radius: 10px;
-  padding: 20px;
-}
+  <script>
+    (function(){
+      const log = (msg,type='info')=>{
+        const out=document.getElementById('logOutput');
+        const ts=new Date().toLocaleString();
+        out.innerHTML += `\n<span class="log-${type}">[${ts}] ${msg}</span>`;
+        out.parentElement.scrollTop = out.parentElement.scrollHeight;
+      };
+      const animateValue = (el,start,end,duration,suffix='')=>{
+        let startTime=null;
+        function step(ts){
+          if(!startTime) startTime=ts;
+          const progress=Math.min((ts-startTime)/duration,1);
+          const value=start+(end-start)*progress;
+          el.textContent=value.toFixed(typeof end==='number' && end%1!==0?10:2)+suffix;
+          if(progress<1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      };
 
-/* Hover interaktif */
-.masternode-cards .card-enhanced:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0 15px var(--accent);
-}
+      const nodeInput=document.getElementById('masternodeAmount');
+      const nodeDisplay=document.getElementById('nodeAmountDisplay');
+      const activateBtn=document.getElementById('activateMasternode');
+      nodeInput.addEventListener('input',()=>{
+        const val=parseFloat(nodeInput.value)||0;
+        animateValue(nodeDisplay,parseFloat(nodeDisplay.textContent)||0,val,500,' BossX');
+        activateBtn.disabled=val<50;
+      });
+      activateBtn.addEventListener('click',()=>{
+        log(`Masternode diaktifkan dengan ${nodeInput.value} BossX`,'success');
+      });
 
-/* Glow khusus card utama */
-.masternode-cards .card-enhanced.glow {
-  border: 1px solid var(--accent);
-  box-shadow: 0 0 12px var(--accent);
-}
+      const valStatus=document.getElementById('validationStatus');
+      const valValue=document.getElementById('validationValue');
+      let valRun=false, valInterval;
+      document.getElementById('toggleValidation').addEventListener('click',()=>{
+        valRun=!valRun;
+        if(valRun){
+          valStatus.textContent='Berjalan';
+          valStatus.style.color='var(--accent)';
+          let r=0;
+          valInterval=setInterval(()=>{
+            r+=0.0000000001;
+            valValue.textContent=r.toFixed(10)+' BossX';
+          },1000);
+          log('Validasi dimulai','success');
+        } else {
+          valStatus.textContent='Berhenti';
+          valStatus.style.color='var(--muted)';
+          clearInterval(valInterval);
+          log('Validasi dihentikan','info');
+        }
+      });
 
-/* Animasi masuk */
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+      const rewardEl=document.getElementById('rewardValue');
+      const countdownEl=document.getElementById('autoClaimCountdown');
+      let cd=60, cdTimer;
+      function startCountdown(){
+        clearInterval(cdTimer);
+        cd=60;
+        countdownEl.textContent=cd;
+        cdTimer=setInterval(()=>{
+          cd--;
+          countdownEl.textContent=cd;
+          if(cd<=0){
+            clearInterval(cdTimer);
+            rewardEl.textContent='0.0000000000 BossX';
+            log('Reward otomatis diklaim','success');
+            startCountdown();
+          }
+        },1000);
+      }
+      startCountdown();
+      document.getElementById('convertBtn').addEventListener('click',()=>{
+        rewardEl.textContent='0.0000000000 BossX';
+        log('Reward dikonversi ke USDT','success');
+        startCountdown();
+      });
 
-/* Responsif tablet */
-@media (max-width: 1024px) {
-  .masternode-cards .card-enhanced { flex: 1 1 calc(50% - 20px); }
-}
+      const usdtBal=document.getElementById('usdtBalance');
+      const usdtDep=document.getElementById('usdtDeposit');
+      const usdtRew=document.getElementById('usdtReward');
+      const usdtUpd=document.getElementById('usdtLastUpdate');
+      document.getElementById('refreshUsdtBtn').addEventListener('click',()=>{
+        const dep=1000;
+        const rew=Math.random
+                const rew = Math.random() * 300;
+        usdtDep.textContent = `$${dep.toFixed(2)}`;
+        usdtRew.textContent = `$${rew.toFixed(2)}`;
+        animateValue(usdtBal, parseFloat(usdtBal.textContent.replace('$','')) || 0, dep + rew, 800, ' USD');
+        usdtUpd.textContent = new Date().toLocaleString();
+        log('Saldo USDT diperbarui','info');
+      });
+    })();
+  </script>
 
-/* Responsif mobile */
-@media (max-width: 600px) {
-  .masternode-cards .card-enhanced { flex: 1 1 100%; }
-}
-
-/* Pastikan tombol di bagian bawah sejajar */
-.masternode-cards .card-enhanced button {
-  margin-top: auto;
-}
-// ==== Fungsi Toast Notifikasi ====
-function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => { toast.classList.add('show'); }, 100);
-  setTimeout(() => {
-    toast.classList.remove('show');
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
-}
-
-// ==== Fungsi Animasi Angka Khusus Master ====
-// p = progress animasi (0 → 1)
-function animateCustomValue(el, duration, prefix = '', suffix = '', calcFn) {
-  let startTimestamp = null;
-  const step = (timestamp) => {
-    if (!startTimestamp) startTimestamp = timestamp;
-    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-    const value = calcFn(progress); // Hitungan khusus Master
-    el.textContent = prefix + value + suffix;
-    if (progress < 1) {
-      window.requestAnimationFrame(step);
-    }
-  };
-  window.requestAnimationFrame(step);
-}
-// ==== Node Amount ====
-const nodeAmountInput = document.getElementById('masternodeAmount');
-const nodeAmountDisplay = document.getElementById('nodeAmountDisplay');
-const activateBtn = document.getElementById('activateMasternode');
-
-// Update tampilan jumlah node saat input berubah
-nodeAmountInput.addEventListener('input', () => {
-  const val = parseFloat(nodeAmountInput.value) || 0;
-  nodeAmountDisplay.textContent = `${val} BossX`;
-  activateBtn.disabled = val < 50; // minimal 50 BossX
-});
-
-// Aktivasi Masternode
-activateBtn.addEventListener('click', () => {
-  const val = parseFloat(nodeAmountInput.value) || 0;
-  if (val >= 50) {
-    showToast(`Masternode diaktifkan dengan ${val} BossX`, 'success');
-    logAction(`Masternode aktif — ${val} BossX`);
-  } else {
-    showToast('Minimal 50 BossX untuk aktivasi', 'error');
-  }
-});
-
-// ==== Validasi Running ====
-const validationValueEl = document.getElementById('validationValue');
-const validationStatusEl = document.getElementById('validationStatus');
-const toggleValidationBtn = document.getElementById('toggleValidation');
-
-let validationRunning = false;
-let validationInterval = null;
-
-toggleValidationBtn.addEventListener('click', () => {
-  validationRunning = !validationRunning;
-  if (validationRunning) {
-    validationStatusEl.textContent = 'Berjalan';
-    validationStatusEl.style.color = 'var(--accent)';
-    startValidation();
-    showToast('Validasi dimulai', 'success');
-    logAction('Validasi dimulai');
-  } else {
-    validationStatusEl.textContent = 'Berhenti';
-    validationStatusEl.style.color = 'var(--muted)';
-    stopValidation();
-    showToast('Validasi dihentikan', 'info');
-    logAction('Validasi dihentikan');
-  }
-});
-
-function startValidation() {
-  let reward = 0;
-  validationInterval = setInterval(() => {
-    reward += 0.0000000001; // contoh kenaikan
-    validationValueEl.textContent = `${reward.toFixed(10)} BossX`;
-  }, 1000);
-}
-
-function stopValidation() {
-  clearInterval(validationInterval);
-}
-// ==== Reward Validasi ====
-const rewardValueEl = document.getElementById('rewardValue');
-const autoClaimCountdownEl = document.getElementById('autoClaimCountdown');
-const convertBtn = document.getElementById('convertBtn');
-
-let autoClaimTime = 60; // detik
-let autoClaimTimer = null;
-
-// Hitungan khusus Master untuk reward (contoh linear, ganti sesuai rumus)
-function rewardCalc(progress) {
-  // progress: 0 → 1
-  return (0.0000000000 + (progress * 0.0001234567)).toFixed(10);
-}
-
-// Jalankan animasi reward saat halaman dimuat
-animateCustomValue(rewardValueEl, 1500, '', ' BossX', rewardCalc);
-
-// Auto‑claim countdown
-function startAutoClaimCountdown() {
-  clearInterval(autoClaimTimer);
-  autoClaimTime = 60;
-  autoClaimCountdownEl.textContent = autoClaimTime;
-  autoClaimTimer = setInterval(() => {
-    autoClaimTime--;
-    autoClaimCountdownEl.textContent = autoClaimTime;
-    if (autoClaimTime <= 0) {
-      clearInterval(autoClaimTimer);
-      autoClaimReward();
-    }
-  }, 1000);
-}
-
-// Fungsi auto‑claim reward
-function autoClaimReward() {
-  showToast('Reward otomatis diklaim', 'success');
-  logAction('Reward otomatis diklaim');
-  // Reset reward ke 0 (atau sesuai logika Master)
-  rewardValueEl.textContent = '0.0000000000 BossX';
-  startAutoClaimCountdown();
-}
-
-// Tombol convert manual
-convertBtn.addEventListener('click', () => {
-  showToast('Reward dikonversi ke USDT', 'success');
-  logAction('Reward dikonversi ke USDT');
-  rewardValueEl.textContent = '0.0000000000 BossX';
-  startAutoClaimCountdown();
-});
-
-// Mulai countdown saat halaman dimuat
-startAutoClaimCountdown();
-// ==== Balance USDT ====
-const usdtBalanceEl = document.getElementById('usdtBalance');
-const usdtDepositEl = document.getElementById('usdtDeposit');
-const usdtRewardEl = document.getElementById('usdtReward');
-const usdtLastUpdateEl = document.getElementById('usdtLastUpdate');
-
-// Hitungan khusus Master untuk saldo USDT
-function usdtCalc(progress) {
-  const deposit = 1000; // contoh saldo awal
-  const reward = 250;   // contoh reward total
-  return (deposit + (reward * progress)).toFixed(2);
-}
-
-// Animasi saldo saat halaman dimuat
-animateCustomValue(usdtBalanceEl, 1500, '$', '', usdtCalc);
-
-// Fungsi refresh saldo
-function refreshUSDT() {
-  // Simulasi update data — nanti bisa ganti dengan fetch API
-  const newDeposit = 1000;
-  const newReward = Math.random() * 300; // contoh random
-  const newBalance = newDeposit + newReward;
-
-  usdtDepositEl.textContent = `$${newDeposit.toFixed(2)}`;
-  usdtRewardEl.textContent = `$${newReward.toFixed(2)}`;
-  usdtLastUpdateEl.textContent = new Date().toLocaleString();
-
-  animateCustomValue(usdtBalanceEl, 1000, '$', '', () => newBalance.toFixed(2));
-
-  showToast('Saldo USDT diperbarui', 'success');
-  logAction(`Saldo USDT diperbarui menjadi $${newBalance.toFixed(2)}`);
-}
-// ==== Log Masternode ====
-const logOutputEl = document.getElementById('logOutput');
-const logContainerEl = document.getElementById('logContainer');
-
-// Fungsi menambah log baru
-function logAction(message) {
-  const timestamp = new Date().toLocaleString();
-  logOutputEl.textContent += `\n[${timestamp}] ${message}`;
-  logContainerEl.scrollTop = logContainerEl.scrollHeight; // auto scroll ke bawah
-}
-
-// Contoh log awal
-logAction('Panel Masternode dimuat');
-
-// ==== Styling tambahan untuk log (opsional, aman) ====
-// Bisa dimasukkan ke CSS global atau inline style
-/*
-.log-container {
-  max-height: 200px;
-  overflow-y: auto;
-  background: rgba(0,0,0,0.3);
-  padding: 10px;
-  border-radius: 6px;
-}
-.log-output {
-  font-family: monospace;
-  font-size: 13px;
-  white-space: pre-wrap;
-  color: #ccc;
-}
-*/
-// ==== Inisialisasi Halaman Masternode ====
-function initMasternodePage() {
-  // Log awal
-  logAction('Halaman Masternode dibuka');
-
-  // Animasi awal angka reward & saldo USDT
-  animateCustomValue(rewardValueEl, 1500, '', ' BossX', rewardCalc);
-  animateCustomValue(usdtBalanceEl, 1500, '$', '', usdtCalc);
-
-  // Mulai auto-claim countdown
-  startAutoClaimCountdown();
-
-  // Pastikan tombol aktivasi sesuai input awal
-  const initialVal = parseFloat(nodeAmountInput.value) || 0;
-  activateBtn.disabled = initialVal < 50;
-
-  // Reset status validasi
-  validationRunning = false;
-  validationStatusEl.textContent = 'Belum berjalan';
-  validationStatusEl.style.color = 'var(--muted)';
-
-  // Bersihkan interval jika ada
-  if (validationInterval) clearInterval(validationInterval);
-  if (autoClaimTimer) clearInterval(autoClaimTimer);
-
-  // Mulai ulang auto-claim
-  startAutoClaimCountdown();
-}
-
-// ==== Panggil init saat halaman Masternode dimuat ====
-document.addEventListener('DOMContentLoaded', () => {
-  // Cek apakah elemen masternode ada di DOM
-  if (document.querySelector('.masternode-cards')) {
-    initMasternodePage();
-  }
-});
-/* ====== Toast Notifikasi ====== */
-.toast {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: rgba(20, 20, 30, 0.95);
-  color: #fff;
-  padding: 12px 18px;
-  border-radius: 6px;
-  font-size: 14px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.3s ease;
-  z-index: 9999;
-  border-left: 4px solid var(--accent);
-  box-shadow: 0 0 10px rgba(0,0,0,0.4);
-}
-.toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-.toast.success { border-left-color: #4caf50; }
-.toast.error { border-left-color: #f44336; }
-.toast.info { border-left-color: var(--accent); }
-
-/* ====== Log Container ====== */
-.log-container {
-  max-height: 200px;
-  overflow-y: auto;
-  background: rgba(0,0,0,0.3);
-  padding: 10px;
-  border-radius: 6px;
-}
-.log-output {
-  font-family: monospace;
-  font-size: 13px;
-  white-space: pre-wrap;
-  color: #ccc;
-}
-
-/* ====== Tombol Umum ====== */
-.btn {
-  background: var(--accent);
-  color: #000;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-.btn:hover {
-  background: gold;
-}
-.btn.secondary {
-  background: #2b3646;
-  color: #fff;
-}
-.btn.secondary:hover {
-  background: #3a4a5f;
-}
-
-/* ====== Input Umum ====== */
-.input {
-  width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #444;
-  background: rgba(255,255,255,0.05);
-  color: #fff;
-  margin-bottom: 10px;
-}
-.input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 5px var(--accent);
-}
-<!-- ====== Integrasi Halaman Masternode BossX ====== -->
-<style>
-  /* Masukkan CSS dari Bagian 2 dan Bagian 9 di sini */
-</style>
-
-<div class="masternode-cards">
-  <!-- Masukkan HTML dari Bagian 1 di sini -->
-</div>
-
-<div class="card" style="margin-top:20px;">
-  <!-- Log Masternode dari Bagian 1 -->
-</div>
-
-<script>
-  // Masukkan fungsi umum & animasi angka (Bagian 3)
-  // Masukkan interaksi Node Amount & Validasi (Bagian 4)
-  // Masukkan interaksi Reward & Auto-Claim (Bagian 5)
-  // Masukkan interaksi Balance USDT (Bagian 6)
-  // Masukkan log & utility (Bagian 7)
-  // Masukkan inisialisasi halaman (Bagian 8)
-
-  // Pastikan initMasternodePage() terpanggil saat halaman dimuat
-  document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('.masternode-cards')) {
-      initMasternodePage();
-    }
-  });
-</script>
+</body>
+</html>
