@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,43 +17,22 @@
     justify-content: space-between;
     align-items: center;
     padding: 10px 20px;
-    background: rgba(48, 0, 72, 0.6); /* glassmorphism base */
+    background: rgba(48, 0, 72, 0.6);
     backdrop-filter: blur(10px);
     border-bottom: 2px solid gold;
   }
 
-  .logo-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo {
-    height: 40px;
-  }
-
-  .bossx-name {
-    font-size: 1.5em;
+  .left-section {
+    font-size: 1em;
     font-weight: bold;
     color: white;
-  }
-
-  .validator-id {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: gold;
+    font-family: monospace;
   }
 
   .right-section {
     display: flex;
     align-items: center;
     gap: 20px;
-  }
-
-  #clock {
-    font-family: monospace;
-    font-size: 1.2em;
-    color: white;
   }
 
   .profile {
@@ -73,35 +52,49 @@
     font-size: 0.9em;
     color: white;
   }
+
+  .validator-id {
+    font-size: 1em;
+    font-weight: bold;
+    color: gold;
+  }
 </style>
 </head>
 <body>
 
 <header class="bossx-header">
-  <div class="logo-section">
-    <img src="logo-bossx.png" alt="BossX Logo" class="logo">
-    <span class="bossx-name">BossX</span>
+  <div class="left-section">
+    <span id="full-datetime">Loading...</span>
   </div>
-  <div class="validator-id">VALIDATOR ID: 8055X</div>
   <div class="right-section">
-    <span id="clock">00:00:00</span>
     <div class="profile">
       <img src="profile.jpg" alt="Profile" class="profile-pic">
       <span class="profile-name">Master</span>
     </div>
+    <div class="validator-id">VALIDATOR ID: 8055X</div>
   </div>
 </header>
 
 <script>
-function updateClock() {
+function updateDateTime() {
   const now = new Date();
+  const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+  const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+  const dayName = days[now.getDay()];
+  const date = String(now.getDate()).padStart(2, '0');
+  const monthName = months[now.getMonth()];
+  const year = now.getFullYear();
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const seconds = String(now.getSeconds()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
+
+  document.getElementById('full-datetime').textContent =
+    `${dayName}, ${date} ${monthName} ${year} | ${hours}:${minutes}:${seconds}`;
 }
-setInterval(updateClock, 1000);
-updateClock();
+
+setInterval(updateDateTime, 1000);
+updateDateTime();
 </script>
 
 </body>
