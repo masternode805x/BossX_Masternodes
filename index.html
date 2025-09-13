@@ -12,6 +12,86 @@
     color: white;
   }
 
+  /* Tombol Toggle Sidebar */
+  #toggle-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+    background: gold;
+    color: black;
+    border: none;
+    padding: 8px 12px;
+    font-size: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  /* Sidebar */
+  .bossx-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 220px;
+    height: 100vh;
+    background: rgba(48, 0, 72, 0.6);
+    backdrop-filter: blur(12px);
+    border-right: 2px solid gold;
+    padding-top: 20px;
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .bossx-sidebar.closed {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px;
+    margin-bottom: 30px;
+  }
+
+  .sidebar-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .sidebar-title {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: white;
+  }
+
+  .bossx-sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .bossx-sidebar nav ul li {
+    margin: 15px 0;
+  }
+
+  .bossx-sidebar nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px 20px;
+    display: block;
+    transition: background 0.3s, border-left 0.3s;
+    border-left: 4px solid transparent;
+  }
+
+  .bossx-sidebar nav ul li a:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid gold;
+  }
+
+  /* Header */
   .bossx-header {
     display: flex;
     justify-content: space-between;
@@ -20,6 +100,12 @@
     background: rgba(48, 0, 72, 0.6);
     backdrop-filter: blur(10px);
     border-bottom: 2px solid gold;
+    margin-left: 220px; /* ruang untuk sidebar */
+    transition: margin-left 0.3s ease;
+  }
+
+  .bossx-header.full {
+    margin-left: 0;
   }
 
   .left-section {
@@ -62,7 +148,28 @@
 </head>
 <body>
 
-<header class="bossx-header">
+<!-- Tombol Toggle -->
+<button id="toggle-btn">☰</button>
+
+<!-- Sidebar -->
+<aside class="bossx-sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img src="logo-bossx.png" alt="BossX Logo" class="sidebar-logo">
+    <span class="sidebar-title">BossX</span>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#dashboard">🏠 Dashboard</a></li>
+      <li><a href="#contracts">📄 Kontrak</a></li>
+      <li><a href="#aktivasi">⚡ Aktivasi</a></li>
+      <li><a href="#history">🕘 History</a></li>
+      <li><a href="#settings">⚙️ Pengaturan</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<!-- Header -->
+<header class="bossx-header" id="header">
   <div class="left-section">
     <span id="full-datetime">Loading...</span>
   </div>
@@ -76,6 +183,13 @@
 </header>
 
 <script>
+/* Toggle Sidebar */
+document.getElementById('toggle-btn').addEventListener('click', function() {
+  document.getElementById('sidebar').classList.toggle('closed');
+  document.getElementById('header').classList.toggle('full');
+});
+
+/* Update Tanggal & Waktu Lengkap */
 function updateDateTime() {
   const now = new Date();
   const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
