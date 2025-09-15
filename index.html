@@ -1,215 +1,1078 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BossX Panel</title>
-<style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #2a003f, #4b006e);
-    color: white;
-  }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard BossX</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ===== VARIABEL GLOBAL ===== */
+    :root {
+      --gap: 20px;
+      --radius: 16px;
+      --color-primary: #6a0dad;
+      --color-accent: #FFD700;
+      --sidebar-width: 250px;
+      --sidebar-collapsed: 60px;
+      --bg-from: #6a0dad;
+      --bg-to: #ff69b4;
+      --text-color: var(--color-accent);
+      --card-bg: rgba(0,0,0,0.35);
+      --card-border: var(--color-accent);
+      --table-border: var(--color-accent);
+    }
 
-  /* Tombol Toggle Sidebar */
-  #toggle-btn {
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1100;
-    background: gold;
-    color: black;
-    border: none;
-    padding: 8px 12px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 4px;
-  }
+    [data-theme="dark"] {
+      --bg-from: #111;
+      --bg-to: #000;
+      --text-color: #EEE;
+      --card-bg: rgba(255,255,255,0.08);
+      --card-border: #555;
+      --table-border: #777;
+    }
 
-  /* Sidebar */
-  .bossx-sidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 220px;
-    height: 100vh;
-    background: rgba(48, 0, 72, 0.6);
-    backdrop-filter: blur(12px);
-    border-right: 2px solid gold;
-    padding-top: 20px;
-    transform: translateX(0);
-    transition: transform 0.3s ease;
-    z-index: 1000;
-  }
+    /* ===== RUNNING TEXT TICKER ===== */
+    .crypto-ticker {
+      position: relative;
+      overflow: hidden;
+      background: #0f1115;
+      border-top: 1px solid rgba(245, 197, 66, 0.25);
+      border-bottom: 1px solid rgba(245, 197, 66, 0.25);
+      padding: 8px 0;
+      width: 100%;
+      z-index: 1000;
+      cursor: pointer;
+    }
+    .ticker-track {
+      display: inline-block;
+      white-space: nowrap;
+      will-change: transform;
+      padding-left: 100%;
+    }
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 32px;
+      color: #eaeaea;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .ticker-label {
+      color: #FFD700;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .ticker-sep {
+      opacity: 0.5;
+      margin: 0 4px;
+    }
+    .price-up { color: #00c853; }
+    .price-down { color: #ff3d00; }
+    @media (max-width: 768px) {
+      .ticker-item { margin-right: 20px; font-size: 13px; }
+    }
 
-  .bossx-sidebar.closed {
-    transform: translateX(-100%);
-  }
+    /* ===== LAYOUT UTAMA ===== */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg-from), var(--bg-to));
+      color: var(--text-color);
+      display: flex;
+      min-height: 100vh;
+      transition: background 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-  .sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 20px;
-    margin-bottom: 30px;
-  }
+    .container {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      transition: grid-template-columns 0.3s ease;
+      width: 100%;
+    }
+    .container.collapsed {
+      grid-template-columns: var(--sidebar-collapsed) 1fr;
+    }
 
-  .sidebar-logo {
-    width: 40px;
-    height: 40px;
-  }
+    /* Sidebar */
+    aside.sidebar {
+      background: rgba(0,0,0,0.4);
+      display: flex; flex-direction: column;
+    }
+    .sidebar-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--gap); border-bottom: 1px solid var(--color-accent);
+    }
+    .logo-container { display: flex; align-items: center; }
+    .sidebar-logo { height: 80px; transition: 0.3s; }
+    .sidebar-logo-text {
+      margin-left: 8px; font-size: 1.2rem; font-weight: bold;
+      color: var(--color-accent); transition: 0.3s;
+    }
+    .container.collapsed .sidebar-logo { height: 60px; }
+    .container.collapsed .sidebar-logo-text { opacity: 0; }
+    .collapse-btn {
+      background: none; border: none; color: var(--color-accent);
+      font-size: 1.6rem; cursor: pointer;
+    }
+    .sidebar-nav {
+      display: flex; flex-direction: column; padding: var(--gap) 0;
+    }
+    .nav-item {
+      display: flex; align-items: center;
+      padding: 12px var(--gap);
+      color: var(--color-accent); text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .nav-item:hover {
+      background: rgba(255,215,0,0.2);
+      transform: translateX(5px);
+    }
+    .nav-item.active { background: rgba(255,215,0,0.2); }
+    .nav-item .icon {
+      width: 24px; text-align: center; font-size: 1.2rem;
+    }
+    .nav-item .label { margin-left: 12px; white-space: nowrap; }
 
-  .sidebar-title {
-    font-size: 1.4em;
-    font-weight: bold;
-    color: white;
-  }
+    /* Follow us */
+    .sidebar-follow {
+      margin-top: auto; padding: var(--gap); text-align: center;
+    }
+    .sidebar-follow .follow-text {
+      display: block; margin-bottom: 8px;
+      font-size: 0.9rem; color: var(--text-color);
+    }
+    .sidebar-follow .social-link {
+      margin: 0 6px; display: inline-block;
+    }
+    .sidebar-follow .social-icon {
+      width: 24px; height: 24px;
+      filter: invert(1); transition: all 0.3s ease;
+    }
+    .sidebar-follow .social-link:hover .social-icon {
+      filter: invert(0.6) brightness(1.3);
+      transform: scale(1.1);
+    }
 
-  .bossx-sidebar nav ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
+    /* Content */
+    .content { display: flex; flex-direction: column; width: 100%; }
+    header {
+      background: rgba(0,0,0,0.3);
+      padding: var(--gap) calc(var(--gap)*2);
+      border-bottom: 2px solid var(--color-accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding-left: 100px;
+      padding-right: 100px;
+    }
+    .real-time-clock {
+      font-size: 1rem; font-weight: bold; margin-right: auto;
+      white-space: nowrap;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      z-index: 10;
+    }
+    .user-info img {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--color-accent);
+      object-fit: cover;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    }
+    .user-info .info-text { display: flex; flex-direction: column; text-align: right; }
+    .user-info h2 { font-size: 1.1rem; margin: 0; }
+    .user-info p { font-size: 0.8rem; opacity: 0.8; margin: 0; }
 
-  .bossx-sidebar nav ul li {
-    margin: 15px 0;
-  }
+    main {
+      flex: 1; padding: var(--gap);
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+      padding-left: 100px;
+      padding-right: 100px;
+    }
 
-  .bossx-sidebar nav ul li a {
-    color: white;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 10px 20px;
-    display: block;
-    transition: background 0.3s, border-left 0.3s;
-    border-left: 4px solid transparent;
-  }
+    /* ===== 4 CARD HORIZONTAL ===== */
+    .card-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
 
-  .bossx-sidebar nav ul li a:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-left: 4px solid gold;
-  }
+    .card {
+      background: var(--card-bg);
+      padding: var(--gap);
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(106, 13, 173, 0.4),
+                  0 0 20px rgba(255, 215, 0, 0.1);
+    }
+    .card h2 {
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      color: var(--color-accent);
+      border-bottom: 1px solid rgba(255,215,0,0.2);
+      padding-bottom: 8px;
+    }
+    .saldo-value {
+      font-size: 1.4rem;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #fff;
+      text-shadow: 0 0 8px rgba(255,215,0,0.3);
+      transition: text-shadow 0.2s ease;
+    }
+    .saldo-value.flash {
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.5);
+      animation: flash 0.5s ease-out;
+    }
+    @keyframes flash {
+      0% { text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.5); }
+      100% { text-shadow: 0 0 8px rgba(255, 215, 0, 0.3); }
+    }
+    .timer {
+      margin: 10px 0 16px;
+      font-size: 1.1rem;
+      color: #FFD700;
+    }
+    .btn-container {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .btn {
+      padding: 8px 16px;
+      background: var(--color-accent);
+      color: var(--color-primary);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .btn:hover {
+      background: #ffec8b;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(255, 215, 0, 0.3);
+    }
+    .btn:disabled { background: #333; color: #888; cursor: not-allowed; }
 
-  /* Header */
-  .bossx-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background: rgba(48, 0, 72, 0.6);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid gold;
-    margin-left: 220px; /* ruang untuk sidebar */
-    transition: margin-left 0.3s ease;
-  }
+    .power-btn {
+      width: 48px; height: 48px;
+      border: 2px solid #888;
+      border-radius: 50%;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .power-btn.active {
+      background: #2ecc71;
+      border-color: #27ae60;
+    }
+    .power-btn svg {
+      width: 24px; height: 24px;
+      stroke: #888;
+      fill: none;
+    }
+    .power-btn.active svg { stroke: #fff; }
 
-  .bossx-header.full {
-    margin-left: 0;
-  }
+    input[type="text"], input[type="search"], input[type="number"] {
+      padding: 6px;
+      border: 1px solid var(--table-border);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.1);
+      color: var(--text-color);
+      margin-bottom: 8px;
+      width: 100%;
+      transition: all 0.2s ease;
+    }
+    input[type="text"]:focus,
+    input[type="search"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+      outline: none;
+    }
 
-  .left-section {
-    font-size: 1em;
-    font-weight: bold;
-    color: white;
-    font-family: monospace;
-  }
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+    .filter-bar .icon {
+      color: var(--color-accent);
+    }
 
-  .right-section {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-  }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid var(--table-border);
+      padding: 6px;
+      text-align: center;
+      color: var(--text-color);
+    }
+    th {
+      background: var(--color-accent);
+      color: var(--color-primary);
+      font-weight: bold;
+    }
 
-  .profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+    /* ===== LOG & HISTORY VALIDASI — HORIZONTAL SPLIT ===== */
+    .log-history-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
 
-  .profile-pic {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 2px solid gold;
-  }
+    .log-engine, .history-validasi {
+      background: var(--card-bg);
+      padding: var(--gap);
+      border-radius: var(--radius);
+      border: 1px solid var(--card-border);
+    }
 
-  .profile-name {
-    font-size: 0.9em;
-    color: white;
-  }
+    .log-engine h2, .history-validasi h2 {
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+      color: var(--color-accent);
+      border-bottom: 1px solid rgba(255,215,0,0.2);
+      padding-bottom: 8px;
+    }
 
-  .validator-id {
-    font-size: 1em;
-    font-weight: bold;
-    color: gold;
-  }
-</style>
+    .terminal-log {
+      background: #000;
+      color: #0f0;
+      font-family: 'Courier New', monospace;
+      padding: 12px;
+      border-radius: var(--radius);
+      height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      border: 1px solid #555;
+      box-shadow:
+        0 0 10px rgba(0, 255, 0, 0.3),
+        inset 0 0 15px rgba(0, 255, 0, 0.1);
+      animation: terminalGlow 3s infinite alternate;
+      margin-top: 8px;
+    }
+    @keyframes terminalGlow {
+      from { box-shadow: 0 0 10px rgba(0, 255, 0, 0.3), inset 0 0 15px rgba(0, 255, 0, 0.1); }
+      to { box-shadow: 0 0 20px rgba(0, 255, 0, 0.5), inset 0 0 25px rgba(0, 255, 0, 0.2); }
+    }
+    .terminal-log span {
+      opacity: 0;
+      transform: translateY(10px);
+      animation: logIn 0.6s forwards ease-out;
+    }
+    @keyframes logIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ===== HISTORY VERTICAL ===== */
+    .history-section {
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap);
+    }
+
+    .footer {
+      text-align: center;
+      padding: var(--gap);
+      background: rgba(0,0,0,0.2);
+      border-top: 1px solid var(--color-accent);
+    }
+
+    @media (max-width: 768px) {
+      aside.sidebar, header { display: none; }
+      .container { grid-template-columns: 1fr; }
+      main { padding: var(--gap); }
+      .card-row, .log-history-row { grid-template-columns: 1fr; }
+      .user-info { position: static; margin-top: 16px; }
+      .log-engine, .history-validasi, .history-section > .card { margin: 0; }
+    }
+  </style>
 </head>
-<body>
+<body data-theme="light">
 
-<!-- Tombol Toggle -->
-<button id="toggle-btn">☰</button>
+  <div class="container" id="container">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-container">
+          <img
+            src="https://i.ibb.co/qYBkPDH3/Picsart-25-04-01-16-25-47-054.png"
+            alt="Logo BossX" class="sidebar-logo"/>
+          <span class="sidebar-logo-text">BossX</span>
+        </div>
+        <button class="collapse-btn" id="toggleSidebar">☰</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active">
+          <span class="icon">🏠</span><span class="label">Beranda</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">💰</span><span class="label">Deposit</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">💸</span><span class="label">Withdrawal</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">🔄</span><span class="label">Peer to Peer</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">🤝</span><span class="label">Referral</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">🚀</span><span class="label">Masternode</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">❓</span><span class="label">FAQ</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">📞</span><span class="label">Support</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">👤</span><span class="label">Profil</span>
+        </a>
+      </nav>
+      <div class="sidebar-follow">
+        <span class="follow-text">Follow us on</span>
+        <a href="https://t.me/BossX_Official" class="social-link" target="_blank">
+          <img src="https://simpleicons.org/icons/telegram.svg" alt="Telegram" class="social-icon"/>
+        </a>
+        <a href="https://twitter.com/BossX_Official" class="social-link" target="_blank">
+          <img src="https://simpleicons.org/icons/twitter.svg" alt="Twitter" class="social-icon"/>
+        </a>
+      </div>
+    </aside>
 
-<!-- Sidebar -->
-<aside class="bossx-sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <img src="logo-bossx.png" alt="BossX Logo" class="sidebar-logo">
-    <span class="sidebar-title">BossX</span>
-  </div>
-  <nav>
-    <ul>
-      <li><a href="#dashboard">🏠 Dashboard</a></li>
-      <li><a href="#contracts">📄 Kontrak</a></li>
-      <li><a href="#aktivasi">⚡ Aktivasi</a></li>
-      <li><a href="#history">🕘 History</a></li>
-      <li><a href="#settings">⚙️ Pengaturan</a></li>
-    </ul>
-  </nav>
-</aside>
+    <div class="content">
+      <header>
+        <div id="realTimeClock" class="real-time-clock">Loading…</div>
+        <button id="themeToggle" class="btn" style="margin:0 16px;">🌙</button>
+        <div class="user-info">
+          <img
+            src="https://i.ibb.co/gbVsGLy0/FB-IMG-1617237754232.jpg"
+            alt="Avatar"/>
+          <div class="info-text">
+            <h2>Fery Muliawan</h2>
+            <p>Validator ID: 8055</p>
+          </div>
+        </div>
+      </header>
 
-<!-- Header -->
-<header class="bossx-header" id="header">
-  <div class="left-section">
-    <span id="full-datetime">Loading...</span>
-  </div>
-  <div class="right-section">
-    <div class="profile">
-      <img src="profile.jpg" alt="Profile" class="profile-pic">
-      <span class="profile-name">Master</span>
+      <main>
+        <!-- ===== RUNNING TEXT DI ATAS CARD VALIDASI ===== -->
+        <div class="crypto-ticker">
+          <div class="ticker-track" id="cryptoTicker">Loading prices...</div>
+        </div>
+
+        <!-- ===== 4 CARD HORIZONTAL ===== -->
+        <div class="card-row">
+          <div class="card">
+            <h2>Node Amount</h2>
+            <div class="saldo-value">
+              <span id="walletBossX">0 BossX</span>
+            </div>
+            <input
+              type="text"
+              id="amountInput"
+              placeholder=" minimal 10 BossX"
+            />
+            <div class="btn-container">
+              <button class="btn" id="buyBtn">Aktivkan Masternode</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Validasi Running (Estimasi)</h2>
+            <div class="saldo-value" id="mining">0.000000000 BossX</div>
+            <div class="timer" id="stopCountdown">Belum berjalan</div>
+            <div class="btn-container">
+              <button class="power-btn" id="onBtn" disabled>
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2v10M5.6 5.6a8 8 0 1 0 11.3 0"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Reward Validasi</h2>
+            <div class="saldo-value" id="balance">0.000000000 BossX</div>
+            <div class="timer" id="countdown">Auto-claim: 60s</div>
+            <div class="btn-container">
+              <button class="btn" id="convertBtn" disabled>Convert to USDT</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Balance USDT</h2>
+            <div class="saldo-value" id="usdtBalanceCard">0.00 USDT</div>
+          </div>
+        </div>
+
+        <!-- ===== LOG ENGINE + HISTORY VALIDASI — HORIZONTAL SPLIT ===== -->
+        <div class="log-history-row">
+          <div class="log-engine">
+            <h2>Log Engine Reward</h2>
+            <div id="terminal-log" class="terminal-log"></div>
+          </div>
+
+          <div class="history-validasi">
+            <h2>History Validasi</h2>
+            <div class="filter-bar">
+              <span class="icon">🔍</span>
+              <input type="search" id="filterValidasi" placeholder="Cari…"/>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Hari</th>
+                  <th>Tanggal</th>
+                  <th>Jam</th>
+                  <th>BossX</th>
+                  <th>Auto-Claim</th>
+                </tr>
+              </thead>
+              <tbody id="history"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ===== HISTORY VERTICAL ===== -->
+        <div class="history-section">
+          <div class="card">
+            <h2>History Aktivasi</h2>
+            <div class="filter-bar">
+              <span class="icon">🔍</span>
+              <input type="search" id="filterAktivasi" placeholder="Cari…"/>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Hari</th>
+                  <th>Waktu</th>
+                  <th>Jumlah</th>
+                  <th>Status</th>
+                  <th>Masa Akhir Kontrak</th>
+                </tr>
+              </thead>
+              <tbody id="walletHistory"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h2>History Convert</h2>
+            <div class="filter-bar">
+              <span class="icon">🔍</span>
+              <input type="search" id="filterConvert" placeholder="Cari…"/>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Hari</th>
+                  <th>Waktu</th>
+                  <th>BossX</th>
+                  <th>USDT</th>
+                </tr>
+              </thead>
+              <tbody id="convertHistory"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <div class="footer">©2025 Dashboard BossX • Terbuka untuk umum 🌐</div>
     </div>
-    <div class="validator-id">VALIDATOR ID: 8055X</div>
   </div>
-</header>
 
-<script>
-/* Toggle Sidebar */
-document.getElementById('toggle-btn').addEventListener('click', function() {
-  document.getElementById('sidebar').classList.toggle('closed');
-  document.getElementById('header').classList.toggle('full');
-});
+  <!-- AUDIO ELEMENT FOR "DING" SOUND -->
+  <audio id="dingSound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YU9vT18=" type="audio/wav">
+  </audio>
 
-/* Update Tanggal & Waktu Lengkap */
-function updateDateTime() {
-  const now = new Date();
-  const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
-  const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+  <script>
+    // ===== RUNNING TEXT SCRIPT DUMMY REAL-TIME =====
+    (function() {
+      const coins = {
+        'BOSSX/USDT': { price: 1.00, change: 0.00, fixed: true },
+        'BTC/USDT': { price: 62000.00, change: 1.20 },
+        'ETH/USDT': { price: 4295.88, change: 0.02 },
+        'TRX/USDT': { price: 0.3316, change: 0.91 },
+        'SOL/USDT': { price: 207.16, change: 2.10 },
+        'DOGE/USDT': { price: 0.1500, change: 0.50 },
+        'SHIB/USDT': { price: 0.000025, change: -0.20 },
+        'SUI/USDT': { price: 0.8500, change: 1.80 },
+        'TRUMP/USDT': { price: 8.51, change: 0.35 }
+      };
 
-  const dayName = days[now.getDay()];
-  const date = String(now.getDate()).padStart(2, '0');
-  const monthName = months[now.getMonth()];
-  const year = now.getFullYear();
-  const hours = String(now.getHours()).padStart(2, '0');
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
+      const displayOrder = [
+        'BOSSX/USDT',
+        'BTC/USDT',
+        'ETH/USDT',
+        'BOSSX/USDT',
+        'TRX/USDT',
+        'SOL/USDT',
+        'BOSSX/USDT',
+        'DOGE/USDT',
+        'SHIB/USDT',
+        'BOSSX/USDT',
+        'SUI/USDT',
+        'BOSSX/USDT',
+        'TRUMP/USDT'
+      ];
 
-  document.getElementById('full-datetime').textContent =
-    `${dayName}, ${date} ${monthName} ${year} | ${hours}:${minutes}:${seconds}`;
-}
+      let animationInterval;
+      let isPaused = false;
 
-setInterval(updateDateTime, 1000);
-updateDateTime();
-</script>
+      function formatPrice(price) {
+        if (price >= 1000) return price.toLocaleString('en-US', { maximumFractionDigits: 2 });
+        if (price >= 1) return price.toFixed(2);
+        return price.toFixed(6).replace(/0+$/, '').replace(/\.$/, '') || '0';
+      }
 
+      function createTickerItem(label, price, change) {
+        const isUp = change >= 0;
+        const cls = isUp ? 'price-up' : 'price-down';
+        const sign = isUp ? '+' : '';
+        return `
+          <span class="ticker-item">
+            <span class="ticker-label">${label}</span>
+            <span class="ticker-sep">•</span>
+            <span class="${cls}">${formatPrice(price)} USDT</span>
+            <span class="${cls}">${sign}${change.toFixed(2)}%</span>
+          </span>
+        `;
+      }
+
+      function updatePrices() {
+        for (let symbol in coins) {
+          const coin = coins[symbol];
+          if (coin.fixed) continue;
+          const delta = (Math.random() - 0.5) * 1.0;
+          coin.change = delta;
+          coin.price = coin.price * (1 + delta / 100);
+          if (coin.price < 0.000001) coin.price = 0.000001;
+        }
+      }
+
+      function buildTicker() {
+        let content = '';
+        for (const symbol of displayOrder) {
+          const coin = coins[symbol];
+          content += createTickerItem(symbol, coin.price, coin.change);
+        }
+        return content + content;
+      }
+
+      function updateTicker() {
+        updatePrices();
+        const tickerElement = document.getElementById('cryptoTicker');
+        if (tickerElement) {
+          tickerElement.innerHTML = buildTicker();
+        }
+      }
+
+      function startAnimation() {
+        if (animationInterval) clearInterval(animationInterval);
+        animationInterval = setInterval(() => {
+          if (!isPaused) {
+            const tickerTrack = document.querySelector('.ticker-track');
+            if (tickerTrack) {
+              const computedStyle = getComputedStyle(tickerTrack);
+              const transform = computedStyle.transform;
+              if (transform === 'none') {
+                tickerTrack.style.transform = 'translateX(-50%)';
+              } else {
+                const matrix = new DOMMatrix(transform);
+                const currentX = matrix.m41;
+                tickerTrack.style.transform = `translateX(${currentX - 1}px)`;
+              }
+            }
+          }
+        }, 50);
+      }
+
+      function pauseAnimation() {
+        isPaused = true;
+      }
+
+      function resumeAnimation() {
+        isPaused = false;
+      }
+
+      updateTicker();
+      startAnimation();
+      setInterval(updateTicker, 10000);
+
+      const tickerBar = document.querySelector('.crypto-ticker');
+      if (tickerBar) {
+        tickerBar.addEventListener('mouseenter', pauseAnimation);
+        tickerBar.addEventListener('mouseleave', resumeAnimation);
+      }
+    })();
+
+    // ===== DASHBOARD SCRIPT ASLI =====
+    document.addEventListener("DOMContentLoaded", () => {
+      // Real-time clock — anti-error
+      function updateRealTimeClock() {
+        try {
+          const now = new Date();
+          const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+          const months = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+          const hari = days[now.getDay()];
+          const tanggal = now.getDate();
+          const bulan = months[now.getMonth()];
+          const tahun = now.getFullYear();
+          const jam = String(now.getHours()).padStart(2, '0');
+          const menit = String(now.getMinutes()).padStart(2, '0');
+          const detik = String(now.getSeconds()).padStart(2, '0');
+          const el = document.getElementById("realTimeClock");
+          if (el) el.textContent = `${hari}, ${tanggal} ${bulan} ${tahun} — ${jam}:${menit}:${detik}`;
+        } catch (e) {
+          console.error("Error updateRealTimeClock:", e);
+        }
+      }
+      if (document.getElementById("realTimeClock")) {
+        setInterval(updateRealTimeClock, 1000);
+        updateRealTimeClock();
+      }
+
+      // Dark mode toggle — anti-error
+      const themeToggle = document.getElementById("themeToggle");
+      const root = document.documentElement;
+
+      if (themeToggle) {
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "dark") root.setAttribute("data-theme", "dark");
+
+        function updateToggleIcon() {
+          const isDark = root.getAttribute("data-theme") === "dark";
+          themeToggle.textContent = isDark ? "☀️" : "🌙";
+        }
+
+        updateToggleIcon();
+
+        themeToggle.addEventListener("click", () => {
+          const isDark = root.getAttribute("data-theme") === "dark";
+          root.setAttribute("data-theme", isDark ? "light" : "dark");
+          localStorage.setItem("theme", isDark ? "light" : "dark");
+          updateToggleIcon();
+        });
+      }
+
+      // Audio element
+      const dingSound = document.getElementById("dingSound");
+
+      // Fungsi bunyi "ding"
+      function playDing() {
+        dingSound.currentTime = 0;
+        dingSound.play().catch(e => console.log("Audio play failed (user interaction required)"));
+      }
+
+      // Elements & vars
+      const amountInput    = document.getElementById("amountInput");
+      const buyBtn         = document.getElementById("buyBtn");
+      const onBtn          = document.getElementById("onBtn");
+      const convertBtn     = document.getElementById("convertBtn");
+      const walletLabel    = document.getElementById("walletBossX");
+      const balanceLabel   = document.getElementById("balance");
+      const miningLabel    = document.getElementById("mining");
+      const stopLabel      = document.getElementById("stopCountdown");
+      const countdownLabel = document.getElementById("countdown");
+      const usdtLabel      = document.getElementById("usdtBalanceCard");
+      const walletHistory  = document.getElementById("walletHistory");
+      const convertHistory = document.getElementById("convertHistory");
+      const historyBody    = document.getElementById("history");
+      const toggleBtn      = document.getElementById("toggleSidebar");
+      const container      = document.getElementById("container");
+      const terminalLog    = document.getElementById('terminal-log');
+
+      let hasPackage       = false;
+      let isMiningActive   = false;
+      let walletBossX      = 0;
+      let rewardPerSecond  = 0;
+      let mining           = 0;
+      let balance          = 0;
+      let usdtBalance      = 0;
+      let countdown        = 60;
+      let stopCountdown    = 0;
+      let contractEndTime  = null;
+      let contractInterval = null;
+      let dailyCheckInterval = null;
+
+      const MONTHLY_YIELD_RATE = 0.10; // 10% per bulan
+      const TOTAL_CONTRACT_SECONDS = 31536000; // 365 hari = 31.536.000 detik
+      const BOSSX_TO_USDT = 1;
+
+      function formatNow() {
+        const d = new Date();
+        const days = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+        return {
+          hari: days[d.getDay()],
+          tanggal: d.toLocaleDateString("id-ID"),
+          jam: d.toLocaleTimeString("id-ID")
+        };
+      }
+
+      function formatTime(sec) {
+        const h = String(Math.floor(sec/3600)).padStart(2,'0'),
+              m = String(Math.floor((sec%3600)/60)).padStart(2,'0'),
+              s = String(sec%60).padStart(2,'0');
+        return `${h}:${m}:${s}`;
+      }
+
+      function updateUSDTDisplay() {
+        usdtLabel.textContent = usdtBalance.toFixed(2) + " USDT";
+      }
+
+      // Toggle sidebar
+      if (toggleBtn && container) {
+        toggleBtn.addEventListener("click", () => {
+          container.classList.toggle("collapsed");
+        });
+      }
+
+      // Fungsi log terminal dengan warna variatif
+      function logToTerminal(message) {
+        const now = new Date();
+        const time = now.toLocaleTimeString('id-ID', { hour12: false });
+
+        let color = "#0f0"; // default
+        if (message.includes("🚀 Masternode ON")) color = "#00bfff";     // cyan
+        else if (message.includes("💰 Auto-claim")) color = "#FFD700";    // gold
+        else if (message.includes("✅ Share accepted")) color = "#00ff00"; // neon green
+        else if (message.includes("⚠️")) color = "#ffff00";              // yellow
+        else if (message.includes("🔥")) color = "#ff4500";              // orange-red
+        else if (message.includes("🔄")) color = "#9d4edd";              // purple
+        else if (message.includes("🛑 Stop")) color = "#ff3333";         // red
+        else if (message.includes("🛑 Kontrak Berakhir")) color = "#ff0000";
+
+        const entry = `<span style="color: ${color};">[${time}] ${message}</span>\n`;
+        if (terminalLog) terminalLog.innerHTML += entry;
+        if (terminalLog) terminalLog.scrollTop = terminalLog.scrollHeight;
+      }
+
+      // Update kontrak secara real-time
+      function updateContractTime() {
+        if (!contractEndTime) return;
+        const diff = contractEndTime - Date.now();
+        const secondsLeft = Math.floor(diff / 1000);
+        const formatted = secondsLeft.toLocaleString('id-ID') + ' detik';
+        const contractEl = document.getElementById('contractTime');
+        if (contractEl) contractEl.textContent = formatted;
+        
+        // Jika kontrak habis
+        if (secondsLeft <= 0) {
+          clearInterval(contractInterval);
+          if (dailyCheckInterval) clearInterval(dailyCheckInterval);
+          stopLabel.textContent = "Kontrak Berakhir";
+          onBtn.disabled = true;
+          isMiningActive = false;
+          logToTerminal("🛑 Kontrak Berakhir");
+        }
+      }
+
+      // Buy package
+      if (buyBtn && amountInput) {
+        buyBtn.addEventListener("click", () => {
+          const raw = amountInput.value.trim();
+          if (!raw) return alert("Masukkan jumlah BossX.");
+          const normalized = raw.replace(/\s+/g, '').replace(/bossx$/i, 'bossX');
+          const num = parseFloat(normalized.replace(/bossX$/i, ''));
+          if (isNaN(num) || num < 10) return alert("Minimal aktivasi adalah 10 BossX.");
+
+          if (hasPackage) return alert("Paket sudah aktif. Hanya bisa satu paket.");
+
+          hasPackage = true;
+          walletBossX = num;
+          walletLabel.textContent = num + " BossX";
+
+          // Catat di History Aktivasi — BELUM RUNNING
+          const w = formatNow();
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${w.hari}</td>
+            <td>${w.tanggal} ${w.jam}</td>
+            <td>${num} BossX</td>
+            <td>Aktivasi - Belum Running</td>
+            <td>—</td>
+          `;
+          walletHistory.prepend(row);
+
+          // Aktifkan tombol ON
+          onBtn.disabled = false;
+          stopLabel.textContent = "Tekan ON untuk memulai validasi";
+          logToTerminal(`📦 Paket ${num} BossX berhasil diaktifkan.`);
+        });
+      }
+
+      // ON/OFF button
+      if (onBtn) {
+        onBtn.addEventListener("click", () => {
+          if (!hasPackage) return alert("Aktifkan paket terlebih dahulu.");
+
+          if (isMiningActive) {
+            // STOP
+            isMiningActive = false;
+            onBtn.disabled = false;
+            onBtn.classList.remove("active");
+            stopLabel.textContent = "Stop running validasi";
+            logToTerminal("🛑 Stop running validasi");
+          } else {
+            // START
+            isMiningActive = true;
+            onBtn.disabled = true;
+            onBtn.classList.add("active");
+            
+            // Mulai kontrak mundur dari 31.536.000 detik
+            contractEndTime = Date.now() + TOTAL_CONTRACT_SECONDS * 1000;
+            stopCountdown = TOTAL_CONTRACT_SECONDS;
+            countdown = 60;
+            stopLabel.textContent = `Kontrak berakhir dalam: ${formatTime(stopCountdown)}`;
+
+            // Hitung reward per detik: (jumlah_paket × 10% per bulan) ÷ detik per bulan
+            const SECONDS_PER_MONTH = 30 * 24 * 60 * 60; // 2.592.000 detik
+            rewardPerSecond = (walletBossX * MONTHLY_YIELD_RATE) / SECONDS_PER_MONTH;
+
+            // Update History Aktivasi — sekarang RUNNING
+            const rows = walletHistory.querySelectorAll('tr');
+            if (rows.length > 0) {
+              rows[0].cells[3].textContent = "Running";
+              rows[0].cells[4].innerHTML = `<span id="contractTime">${TOTAL_CONTRACT_SECONDS.toLocaleString('id-ID')} detik</span>`;
+            }
+
+            // Mulai timer kontrak
+            contractInterval = setInterval(updateContractTime, 1000);
+            logToTerminal("🚀 Masternode ON | Hash: 1.25 KH/s | Temp: 62°C");
+
+            // Mulai mining per detik — nilai masuk ke Validasi Running
+            let miningInterval = setInterval(() => {
+              if (!isMiningActive) return clearInterval(miningInterval);
+              mining += rewardPerSecond;
+              miningLabel.textContent = mining.toFixed(9) + " BossX";
+              miningLabel.style.opacity = 0.8;
+              setTimeout(() => miningLabel.style.opacity = 1, 100);
+            }, 1000);
+
+            // Auto-claim tiap 60 DETIK (BUKAN PER DETIK!)
+            const claimInterval = setInterval(() => {
+              if (!isMiningActive) return clearInterval(claimInterval);
+
+              countdown--;
+              countdownLabel.textContent = `Auto-claim: ${countdown}s`;
+              if (countdown <= 0) {
+                countdown = 60; // Reset timer
+
+                // ONLY CLAIM IF MINING > 0
+                if (mining > 0) {
+                  const rewardAmount = mining;
+                  balance += rewardAmount;
+                  const w = formatNow();
+                  const r = document.createElement("tr");
+                  r.innerHTML = `
+                    <td>${w.hari}</td>
+                    <td>${w.tanggal}</td>
+                    <td>${w.jam}</td>
+                    <td>+${rewardAmount.toFixed(9)} BossX</td>
+                    <td>✅</td>
+                  `;
+                  historyBody.prepend(r);
+                  
+                  // Kosongkan Validasi Running
+                  mining = 0;
+                  miningLabel.textContent = "0.000000000 BossX";
+                  
+                  // Update Reward Validasi
+                  balanceLabel.textContent = balance.toFixed(9) + " BossX";
+                  balanceLabel.classList.add("flash");
+                  setTimeout(() => balanceLabel.classList.remove("flash"), 500);
+                  
+                  // Enable Convert if balance >= 1
+                  if (balance >= 1) convertBtn.disabled = false;
+                  
+                  logToTerminal(`💰 Auto-claim: +${rewardAmount.toFixed(9)} BossX → Reward Validasi: ${balance.toFixed(9)} BossX`);
+                  playDing();
+                }
+              }
+            }, 1000);
+
+            // Check daily stop at 06:00
+            dailyCheckInterval = setInterval(() => {
+              const now = new Date();
+              if (now.getHours() === 6 && now.getMinutes() === 0 && now.getSeconds() === 0 && isMiningActive) {
+                isMiningActive = false;
+                onBtn.disabled = false;
+                onBtn.classList.remove("active");
+                stopLabel.textContent = "Stop running validasi";
+                logToTerminal("🛑 Stop running validasi (06:00)");
+              }
+            }, 1000);
+          }
+        });
+      }
+
+      // Convert to USDT — only if balance >= 1
+      if (convertBtn && balanceLabel) {
+        convertBtn.addEventListener("click", () => {
+          if (balance < 1) return alert("Minimal convert adalah 1 BossX");
+          const usdt = balance * BOSSX_TO_USDT;
+          usdtBalance += usdt;
+          updateUSDTDisplay();
+          const w = formatNow();
+          const r = document.createElement("tr");
+          r.innerHTML = `
+            <td>${w.hari}</td>
+            <td>${w.tanggal} ${w.jam}</td>
+            <td>${balance.toFixed(9)}</td>
+            <td>${usdt.toFixed(2)}</td>
+          `;
+          convertHistory.prepend(r);
+          balance = 0;
+          balanceLabel.textContent = "0.000000000 BossX";
+          convertBtn.disabled = true;
+        });
+      }
+
+      // Init display
+      function initDisplay() {
+        stopLabel.textContent = "Belum berjalan";
+        countdownLabel.textContent = "Auto-claim: 60s";
+        walletLabel.textContent = walletBossX + " BossX";
+        updateUSDTDisplay();
+        logToTerminal("💻 Log Engine Reward siap. Aktivasi paket & klik ON untuk memulai...");
+      }
+      initDisplay();
+    });
+  </script>
 </body>
 </html>
