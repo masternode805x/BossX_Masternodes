@@ -94,10 +94,251 @@
             border-radius: 0.75rem;
             padding: 1.5rem;
             transition: border-color 0.2s ease-in-out;
+            position: relative;
+            overflow: hidden;
         }
 
         .stat-card:hover {
             border-color: rgba(245, 158, 11, 0.5);
+        }
+
+        /* Running Border Effect */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 0.75rem;
+            padding: 2px;
+            background: linear-gradient(90deg, transparent, #10b981, transparent);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: source-out;
+            animation: runningBorder 4s linear infinite;
+            opacity: 0;
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Corner Dots */
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #10b981;
+            border-radius: 50%;
+            top: -2px;
+            left: -2px;
+            box-shadow: 
+                calc(100% + 4px) 0 0 #10b981,
+                calc(100% + 4px) calc(100% + 4px) 0 #10b981,
+                0 calc(100% + 4px) 0 #10b981;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover::after {
+            opacity: 1;
+        }
+
+        /* Individual Border Lines */
+        .stat-card {
+            --border-size: 2px;
+            --border-radius: 0.75rem;
+        }
+
+        .stat-card .border-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #10b981, #22c55e, #10b981, transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .stat-card:hover .border-line {
+            opacity: 1;
+        }
+
+        /* Top Border */
+        .stat-card .border-top {
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--border-size);
+            background: linear-gradient(90deg, transparent, #10b981, #22c55e, #10b981, transparent);
+            animation: borderTop 3s linear infinite;
+            transform-origin: left;
+        }
+
+        /* Right Border */
+        .stat-card .border-right {
+            top: 0;
+            right: 0;
+            width: var(--border-size);
+            height: 100%;
+            background: linear-gradient(180deg, transparent, #10b981, #22c55e, #10b981, transparent);
+            animation: borderRight 3s linear infinite 0.7s;
+            transform-origin: top;
+        }
+
+        /* Bottom Border */
+        .stat-card .border-bottom {
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            height: var(--border-size);
+            background: linear-gradient(270deg, transparent, #10b981, #22c55e, #10b981, transparent);
+            animation: borderBottom 3s linear infinite 1.4s;
+            transform-origin: right;
+        }
+
+        /* Left Border */
+        .stat-card .border-left {
+            bottom: 0;
+            left: 0;
+            width: var(--border-size);
+            height: 100%;
+            background: linear-gradient(0deg, transparent, #10b981, #22c55e, #10b981, transparent);
+            animation: borderLeft 3s linear infinite 2.1s;
+            transform-origin: bottom;
+        }
+
+        /* Border Animations */
+        @keyframes borderTop {
+            0% {
+                transform: scaleX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            25% {
+                transform: scaleX(1);
+                opacity: 1;
+            }
+            30% {
+                opacity: 0;
+            }
+            100% {
+                transform: scaleX(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes borderRight {
+            0% {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            25% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+            30% {
+                opacity: 0;
+            }
+            100% {
+                transform: scaleY(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes borderBottom {
+            0% {
+                transform: scaleX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            25% {
+                transform: scaleX(1);
+                opacity: 1;
+            }
+            30% {
+                opacity: 0;
+            }
+            100% {
+                transform: scaleX(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes borderLeft {
+            0% {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            25% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+            30% {
+                opacity: 0;
+            }
+            100% {
+                transform: scaleY(1);
+                opacity: 0;
+            }
+        }
+
+        /* Corner Dots Animation */
+        .stat-card .corner-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, #22c55e, #10b981);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 0 6px #10b981;
+        }
+
+        .stat-card:hover .corner-dot {
+            opacity: 1;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        .stat-card .corner-dot.top-left {
+            top: -3px;
+            left: -3px;
+        }
+
+        .stat-card .corner-dot.top-right {
+            top: -3px;
+            right: -3px;
+        }
+
+        .stat-card .corner-dot.bottom-right {
+            bottom: -3px;
+            right: -3px;
+        }
+
+        .stat-card .corner-dot.bottom-left {
+            bottom: -3px;
+            left: -3px;
+        }
+
+        @keyframes dotPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 6px #10b981;
+            }
+            50% {
+                transform: scale(1.2);
+                box-shadow: 0 0 12px #22c55e;
+            }
         }
 
         .portfolio-item {
@@ -270,6 +511,18 @@
                     <!-- 4 Stats Cards Horizontal -->
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div class="stat-card hover-scale">
+                            <!-- Corner Dots -->
+                            <div class="corner-dot top-left"></div>
+                            <div class="corner-dot top-right"></div>
+                            <div class="corner-dot bottom-right"></div>
+                            <div class="corner-dot bottom-left"></div>
+                            
+                            <!-- Border Lines -->
+                            <div class="border-line border-top"></div>
+                            <div class="border-line border-right"></div>
+                            <div class="border-line border-bottom"></div>
+                            <div class="border-line border-left"></div>
+                            
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-sm text-gray-400">Total Saldo</p>
                                 <i data-lucide="wallet" class="w-4 h-4 text-amber-400"></i>
@@ -282,6 +535,18 @@
                         </div>
 
                         <div class="stat-card hover-scale">
+                            <!-- Corner Dots -->
+                            <div class="corner-dot top-left"></div>
+                            <div class="corner-dot top-right"></div>
+                            <div class="corner-dot bottom-right"></div>
+                            <div class="corner-dot bottom-left"></div>
+                            
+                            <!-- Border Lines -->
+                            <div class="border-line border-top"></div>
+                            <div class="border-line border-right"></div>
+                            <div class="border-line border-bottom"></div>
+                            <div class="border-line border-left"></div>
+                            
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-sm text-gray-400">P&L Hari Ini</p>
                                 <i data-lucide="bar-chart-3" class="w-4 h-4 text-green-400"></i>
@@ -294,6 +559,18 @@
                         </div>
 
                         <div class="stat-card hover-scale">
+                            <!-- Corner Dots -->
+                            <div class="corner-dot top-left"></div>
+                            <div class="corner-dot top-right"></div>
+                            <div class="corner-dot bottom-right"></div>
+                            <div class="corner-dot bottom-left"></div>
+                            
+                            <!-- Border Lines -->
+                            <div class="border-line border-top"></div>
+                            <div class="border-line border-right"></div>
+                            <div class="border-line border-bottom"></div>
+                            <div class="border-line border-left"></div>
+                            
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-sm text-gray-400">Total Aset</p>
                                 <i data-lucide="pie-chart" class="w-4 h-4 text-blue-400"></i>
@@ -303,6 +580,18 @@
                         </div>
 
                         <div class="stat-card hover-scale">
+                            <!-- Corner Dots -->
+                            <div class="corner-dot top-left"></div>
+                            <div class="corner-dot top-right"></div>
+                            <div class="corner-dot bottom-right"></div>
+                            <div class="corner-dot bottom-left"></div>
+                            
+                            <!-- Border Lines -->
+                            <div class="border-line border-top"></div>
+                            <div class="border-line border-right"></div>
+                            <div class="border-line border-bottom"></div>
+                            <div class="border-line border-left"></div>
+                            
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-sm text-gray-400">Volume 24j</p>
                                 <i data-lucide="dollar-sign" class="w-4 h-4 text-purple-400"></i>
@@ -411,6 +700,18 @@
                         <!-- 4 Stats Cards Horizontal -->
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
                             <div class="stat-card hover-scale">
+                                <!-- Corner Dots -->
+                                <div class="corner-dot top-left"></div>
+                                <div class="corner-dot top-right"></div>
+                                <div class="corner-dot bottom-right"></div>
+                                <div class="corner-dot bottom-left"></div>
+                                
+                                <!-- Border Lines -->
+                                <div class="border-line border-top"></div>
+                                <div class="border-line border-right"></div>
+                                <div class="border-line border-bottom"></div>
+                                <div class="border-line border-left"></div>
+                                
                                 <div class="flex items-center justify-between mb-2">
                                     <p class="text-sm text-gray-400">Total Saldo</p>
                                     <i data-lucide="wallet" class="w-4 h-4 text-amber-400"></i>
@@ -423,6 +724,18 @@
                             </div>
 
                             <div class="stat-card hover-scale">
+                                <!-- Corner Dots -->
+                                <div class="corner-dot top-left"></div>
+                                <div class="corner-dot top-right"></div>
+                                <div class="corner-dot bottom-right"></div>
+                                <div class="corner-dot bottom-left"></div>
+                                
+                                <!-- Border Lines -->
+                                <div class="border-line border-top"></div>
+                                <div class="border-line border-right"></div>
+                                <div class="border-line border-bottom"></div>
+                                <div class="border-line border-left"></div>
+                                
                                 <div class="flex items-center justify-between mb-2">
                                     <p class="text-sm text-gray-400">P&L Hari Ini</p>
                                     <i data-lucide="bar-chart-3" class="w-4 h-4 text-green-400"></i>
@@ -435,6 +748,18 @@
                             </div>
 
                             <div class="stat-card hover-scale">
+                                <!-- Corner Dots -->
+                                <div class="corner-dot top-left"></div>
+                                <div class="corner-dot top-right"></div>
+                                <div class="corner-dot bottom-right"></div>
+                                <div class="corner-dot bottom-left"></div>
+                                
+                                <!-- Border Lines -->
+                                <div class="border-line border-top"></div>
+                                <div class="border-line border-right"></div>
+                                <div class="border-line border-bottom"></div>
+                                <div class="border-line border-left"></div>
+                                
                                 <div class="flex items-center justify-between mb-2">
                                     <p class="text-sm text-gray-400">Total Aset</p>
                                     <i data-lucide="pie-chart" class="w-4 h-4 text-blue-400"></i>
@@ -444,6 +769,18 @@
                             </div>
 
                             <div class="stat-card hover-scale">
+                                <!-- Corner Dots -->
+                                <div class="corner-dot top-left"></div>
+                                <div class="corner-dot top-right"></div>
+                                <div class="corner-dot bottom-right"></div>
+                                <div class="corner-dot bottom-left"></div>
+                                
+                                <!-- Border Lines -->
+                                <div class="border-line border-top"></div>
+                                <div class="border-line border-right"></div>
+                                <div class="border-line border-bottom"></div>
+                                <div class="border-line border-left"></div>
+                                
                                 <div class="flex items-center justify-between mb-2">
                                     <p class="text-sm text-gray-400">Volume 24j</p>
                                     <i data-lucide="dollar-sign" class="w-4 h-4 text-purple-400"></i>
